@@ -1,5 +1,5 @@
 {
-  "name": "formobject/formobject",
+  "name": "ems/formobject",
   "type": "library",
   "description": "Painless forms for PHP",
   "keywords": ["forms", "mvc", "controller", "validation"],
@@ -11,15 +11,9 @@
       "homepage": "http://web-utils.de"
     }
    ],
-    "repositories": [
-    {
-        "type": "vcs",
-        "url": "https://github.com/mtils/collection.git"
-    }
-    ],
   "require": {
     "php": ">=5.3.0",
-    "collection/collection":"dev-master"
+    "ems/collection":"dev-master"
   },
   "autoload": {
     "psr-0": {
