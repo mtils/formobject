@@ -139,7 +139,7 @@ class FormItem{
             return Registry::getRenderer()->renderFormItem($this);
         }
         // No exceptions inside __toString
-        catch(Exception $e){
+        catch(\Exception $e){
             trigger_error($e->getMessage(),E_USER_WARNING);
         }
         return "";
