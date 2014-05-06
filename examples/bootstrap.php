@@ -43,6 +43,12 @@ $form['rememberMyRadio']->falseString = 'Forget my Radio';
 $form['rememberMyRadio']->setValue(TRUE);
 $form['rememberMyRadio']->mustBeTrue = TRUE;
 
+$form['message'] = new TextField;
+$form['message']->setRequired(TRUE);
+$form['message']->setValue("");
+$form['message']->setTitle('Message');
+$form['message']->multiLine = TRUE;
+
 // $form->actions['submit'] = new Action();
 // $form->actions['submit']->setAction('submit');
 // $form->actions['submit']->setTitle('Submit');

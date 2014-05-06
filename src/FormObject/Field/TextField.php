@@ -8,6 +8,7 @@ class TextField extends Field{
     public $minLength = NULL;
     public $maxLength = NULL;
     public $allowHtml = NULL;
+    public $multiLine = FALSE;
 
     public function createAttributes(){
         $attributes = parent::createAttributes();

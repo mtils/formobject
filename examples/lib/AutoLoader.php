@@ -1,6 +1,6 @@
 <?php
 
-$libDir = realpath(dirname(__FILE__) . '/../../');
+$libDir = realpath(dirname(__FILE__) . '/../../src');
 $collectionsDir = realpath(dirname(__FILE__) . '/../../../collection/src');
 $exampleDir = realpath(dirname(__FILE__) . '/../');
 
