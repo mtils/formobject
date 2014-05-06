@@ -1,0 +1,12 @@
+<? if($item->switchable): ?>
+
+<? else: ?>
+    <fieldset>
+    <? if($item->hasTitle()): ?>
+    <legend><?= $item->title ?></legend>
+    <? endif ?>
+    <? foreach($item as $field): ?>
+    <?= $field ?>
+    <? endforeach ?>
+    </fieldset>
+<? endif ?>

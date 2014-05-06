@@ -1,0 +1,9 @@
+<? if($item instanceof \FormObject\Form): ?>
+<form <?= $item->getAttributesString()?>>
+<? foreach($item->fields as $field): ?>
+<?= $field ?>
+<? endforeach ?>
+</form>
+<? else: ?>
+<label for="<?= $item->getId() ?>"><?= $item->getTitle() ?></label><input <?= $item->getAttributesString() ?>/>
+<? endif ?>

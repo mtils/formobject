@@ -1,0 +1,9 @@
+    <div class="form-group<? if(!$item->isValid()) echo ' has-error'; ?>">
+    <? $item->addCssClass('form-control') ?>
+        <label for="<?= $item->id ?>"><?= $item->title ?></label><input <?= $item->attributes ?>/>
+        <? if(!$item->isValid()): ?>
+        <? foreach($item->messages as $error): ?>
+        <span class="help-inline"><?= $error ?></span>
+        <? endforeach ?>
+        <? endif ?>
+    </div>

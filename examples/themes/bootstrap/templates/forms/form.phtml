@@ -1,0 +1,14 @@
+<? $item->setAttribute('role','form') ?>
+<form <?= $item->attributes ?>>
+<? foreach($item->fields as $field): ?>
+    <? if($field->className == 'HiddenField'): ?>
+       <input <?=$field->attributes ?> />
+    <? else: ?>
+       <?= $field ?>
+    <? endif ?>
+
+<? endforeach ?>
+<? foreach($item->actions as $field): ?>
+    <button type="submit" value="<?= $field->action ?>" class="<?= $field->cssClasses->append('btn')->append('btn-primary') ?>"><?= $field->title ?></button>
+<? endforeach ?>
+</form>
