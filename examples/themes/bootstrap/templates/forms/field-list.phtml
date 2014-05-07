@@ -1,5 +1,9 @@
 <? if($item->switchable): ?>
-
+    <div class="tab-pane<? if($item->isFirst): ?> active<? endif ?>" id="<?= $item->id ?>">
+    <? foreach($item as $field): ?>
+        <?= $field ?>
+    <? endforeach ?>
+    </div>
 <? else: ?>
     <fieldset>
     <? if($item->hasTitle()): ?>

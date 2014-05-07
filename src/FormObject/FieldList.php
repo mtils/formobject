@@ -97,6 +97,16 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
         return count($this->fields);
     }
 
+    public function fieldLists(){
+        $lists = array();
+        foreach($this as $field){
+            if($field instanceof self){
+                $lists[] = $field;
+            }
+        }
+        return $lists;
+    }
+
     public function getDataFields(){
         return $this->dataFields;
     }
