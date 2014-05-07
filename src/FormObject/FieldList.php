@@ -50,11 +50,23 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
     }
 
     public function offsetExists($offset){
-        return isset($this->fields[$offset]);
+        if(isset($this->fields[$offset])){
+            return TRUE;
+        }
+        if(isset($this->dataFields[$offset])){
+            return TRUE;
+        }
+        return FALSE;
     }
 
     public function offsetGet($offset){
-        return $this->fields[$offset];
+        if(isset($this->fields[$offset])){
+            return $this->fields[$offset];
+        }
+        return $this->findDataField($offset);
+        if(isset($this->dataFields[$offset])){
+            return $this->dataFields[$offset];
+        }
     }
 
     public function offsetSet($offset, $value){
@@ -105,6 +117,14 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
             }
         }
         return $lists;
+    }
+
+    public function findDataField($name){
+        foreach($this->dataFields as $field){
+            if($field->getName() == $name){
+                return $field;
+            }
+        }
     }
 
     public function getDataFields(){

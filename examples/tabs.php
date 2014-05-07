@@ -69,8 +69,9 @@ $form->push($container2);
 // $form->actions['submit'] = new Action();
 // $form->actions['submit']->setAction('submit');
 // $form->actions['submit']->setTitle('Submit');
-
+$form['surname']->setValue('Button');
 $form->fillByGlobals();
+
 $data = array();
 if($form->wasSubmitted()){
     $data = $form->data;
