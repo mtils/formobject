@@ -23,6 +23,9 @@ class SimpleFactory implements FactoryInterface{
         elseif($item instanceof \FormObject\Field\ComboboxField){
             return $this->forSelectOneField($item);
         }
+        elseif($item instanceof \FormObject\Field\SelectManyField){
+            return $this->forSelectManyField($item);
+        }
         else{
             throw new \UnexpectedValueException("Cannot create validator for field ".$item->getClassName());
         }
@@ -59,6 +62,13 @@ class SimpleFactory implements FactoryInterface{
 
     public function forSelectOneField($item){
         $validator = new InListValidator();
+        $validator->required = $item->isRequired();
+        $validator->allowedValues = array_keys($item->getIterator()->toArray());
+        return $validator;
+    }
+
+    public function forSelectManyField($item){
+        $validator = new MultipleInListValidator();
         $validator->required = $item->isRequired();
         $validator->allowedValues = array_keys($item->getIterator()->toArray());
         return $validator;

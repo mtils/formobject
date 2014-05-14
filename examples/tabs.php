@@ -16,6 +16,7 @@ use FormObject\Field\Action;
 use FormObject\Field\CheckboxField;
 use FormObject\Field\BooleanRadioField;
 use FormObject\Field\ComboboxField;
+use FormObject\Field\SelectManyField;
 
 
 Registry::getRenderer()->addPath(dirname(__FILE__).'/themes/bootstrap/templates/forms');
@@ -60,9 +61,18 @@ $category->setSrc(array(
     5 => 'Prospect'
 ))->setValue(2)->setRequired(TRUE);
 
+$tags = SelectManyField::create('tags')
+                         ->setTitle('Tags')
+                         ->setSrc(array(
+                            1 => 'New',
+                            2 => 'Partner',
+                            3 => 'Important',
+                            4 => 'Reused'
+                         ));
+
 $container2 = new FieldList('group2', 'Tab Two');
 $container2->setSwitchable(TRUE);
-$container2->push($category);
+$container2->push($category)->push($tags);
 
 $form->push($container2);
 
@@ -74,6 +84,7 @@ $form->fillByGlobals();
 $data = array();
 if($form->wasSubmitted()){
     $data = $form->data;
+    print_r($_GET);
 }
 
 include dirname(__FILE__).'/themes/bootstrap/templates/index.phtml';
