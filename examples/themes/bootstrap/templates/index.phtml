@@ -21,8 +21,12 @@
     <h1>Simple Bootstrap Form</h1>
     <?= $form ?>
     <? if($data): ?>
-    <br/><h3>Output:</h3>
+    <br/><h3>Data:</h3>
     <pre><? var_export($data) ?></pre>
+    <? endif ?>
+    <? if($form->selectedAction): ?>
+    <br/><h3>Action:</h3>
+    <code><?= $form->selectedAction->getValue() ?></code>
     <? endif ?>
     </div>
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

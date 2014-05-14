@@ -75,6 +75,20 @@ class Field extends FormItem{
         return $this->setValue($value);
     }
 
+    public function isFirst(){
+        if($this->parent){
+            return $this->parent->isFirstField($this);
+        }
+        return FALSE;
+    }
+
+    public function isLast(){
+        if($this->parent){
+            return $this->parent->isLastField($this);
+        }
+        return FALSE;
+    }
+
     public function getParent(){
         return $this->parent;
     }

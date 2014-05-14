@@ -194,4 +194,23 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
             $this->parent->_removeDataField($field);
         }
     }
+
+    public function isFirstField(Field $field){
+        if(isset($this->keyOrder[0])){
+            if($this->keyOrder[0] == $field->getName()){
+                return TRUE;
+            }
+        }
+        return FALSE;
+    }
+
+    public function isLastField(Field $field){
+        $last = (count($this->keyOrder)-1);
+        if(isset($this->keyOrder[$last])){
+            if($this->keyOrder[$last] == $field->getName()){
+                return TRUE;
+            }
+        }
+        return FALSE;
+    }
 }

@@ -12,6 +12,10 @@ class Form extends FormItem implements ArrayAccess{
 
     const POST = 'post';
 
+    const REQUEST = 1;
+
+    const MANUAL = 2;
+
     /**
     * @brief Holds the Form Fields
     * @var FieldList
@@ -32,6 +36,8 @@ class Form extends FormItem implements ArrayAccess{
     protected $_needsValidation = FALSE;
 
     protected $_wasSubmitted = FALSE;
+
+    protected $dataOrigin;
 
     /**
     * @brief multipart/form-data
@@ -59,12 +65,16 @@ class Form extends FormItem implements ArrayAccess{
         }
     }
 
+    public function getDataOrigin(){
+        return $this->dataOrigin;
+    }
+
     protected function createFields(){
         $fields = new FieldList;
         $fields->setForm($this);
         $fields->setName('_root');
 
-        $fields->push(HiddenField::create('_wasSubmitted')->setValue(1));
+//         $fields->push(HiddenField::create('_wasSubmitted')->setValue(1));
         return $fields;
     }
 
@@ -184,7 +194,7 @@ class Form extends FormItem implements ArrayAccess{
             print "\n".$field->getId();
         }
         $this->_needsValidation = FALSE;
-        $this->_wasSubmitted = FALSE;
+        $this->dataOrigin = self::MANUAL;
     }
 
     public function fillByArray($data){
@@ -194,7 +204,7 @@ class Form extends FormItem implements ArrayAccess{
             }
         }
         $this->_needsValidation = FALSE;
-        $this->_wasSubmitted = FALSE;
+        $this->dataOrigin = self::MANUAL;
     }
 
     public function fillByRequest($request){
@@ -202,8 +212,17 @@ class Form extends FormItem implements ArrayAccess{
     }
 
     public function fillByRequestArray($request){
-        if(isset($request['_wasSubmitted']) && $request['_wasSubmitted']){
-            $this->_wasSubmitted = TRUE;
+
+        $this->_wasSubmitted = FALSE;
+
+        foreach($this->actions as $action){
+            if(isset($request[$action->getAction()]) && $request[$action->getAction()] == $action->getValue()){
+                $action->setSelected(TRUE);
+                $this->_wasSubmitted = TRUE;
+            }
+        }
+
+        if($this->_wasSubmitted){
             foreach($this->getDataFields() as $field){
                 $fieldName = $field->getName();
                 if(isset($request[$fieldName])){
@@ -234,11 +253,17 @@ class Form extends FormItem implements ArrayAccess{
         $data = array();
         foreach($this->getDataFields() as $field){
             $fieldName = $field->getName();
-            if($fieldName != '_wasSubmitted'){
-                $data[$fieldName] = $field->getValue();
-            }
+            $data[$fieldName] = $field->getValue();
         }
         return $data;
+    }
+
+    public function getSelectedAction(){
+        foreach($this->actions as $action){
+            if($action->isSelected()){
+                return $action;
+            }
+        }
     }
 
     public function isValid(){
