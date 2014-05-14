@@ -11,7 +11,6 @@ class Field extends FormItem{
     */
     protected $form;
 
-
     protected $value;
 
     protected $parent;
@@ -30,9 +29,11 @@ class Field extends FormItem{
     protected $validator = NULL;
 
     public function __construct($name=NULL, $title=NULL){
+        
         if($name !== NULL){
             $this->setName($name);
         }
+
         if($title !== NULL){
             $this->setTitle($title);
         }
@@ -138,5 +139,18 @@ class Field extends FormItem{
 
     public function getMessages(){
         return $this->getValidator()->getMessages();
+    }
+
+    /**
+     * @brief Creates a new Field
+     * 
+     * @see __construct
+     * @param string $name The name of that field
+     * @param string $title The title (label) of that field
+     * @return Field
+     */
+    public static function create($name=NULL, $title=NULL){
+        $class = get_called_class();
+        return new $class($name, $title);
     }
 }

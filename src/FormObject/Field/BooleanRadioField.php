@@ -72,4 +72,30 @@ class BooleanRadioField extends BooleanField implements Selectable{
         return FALSE;
     }
 
+    public function getStringForTrue(){
+        return $this->trueString;
+    }
+
+    public function setStringForTrue($trueString){
+        $this->trueString = $trueString;
+        return $this;
+    }
+
+    public function getStringForFalse(){
+        return $this->falseString;
+    }
+
+    public function setStringForFalse($falseString){
+        $this->falseString = $falseString;
+        return $this;
+    }
+
+    public function getOrder(){
+        return $this->order;
+    }
+
+    public function setOrder($order){
+        $this->order = $order;
+        return $this;
+    }
 }

@@ -64,8 +64,7 @@ class Form extends FormItem implements ArrayAccess{
         $fields->setForm($this);
         $fields->setName('_root');
 
-        $fields['_wasSubmitted'] = new HiddenField;
-        $fields['_wasSubmitted']->setValue(1);
+        $fields->push(HiddenField::create('_wasSubmitted')->setValue(1));
         return $fields;
     }
 
@@ -73,8 +72,7 @@ class Form extends FormItem implements ArrayAccess{
         $actions = new FieldList;
         $actions->setForm($this);
 
-        $actions['submit'] = new Action;
-        $actions['submit']->setTitle('Submit');
+        $actions->push(Action::create('submit')->setTitle('Submit'));
 
         return $actions;
     }
@@ -124,7 +122,25 @@ class Form extends FormItem implements ArrayAccess{
 
     public function push(Field $field){
         $this->fields->push($field);
+
+        $numArgs = func_num_args();
+
+        if($numArgs > 1){
+            $args = func_get_args();
+            for($i=1;$i<$numArgs;$i++){
+                $this->fields->push($args[$i]);
+            }
+        }
+
         return $this;
+    }
+
+    public function get($name){
+        return $this->fields->get($name);
+    }
+
+    public function __invoke($name){
+        return $this->fields->__invoke($name);
     }
 
     public function getAction(){
@@ -241,5 +257,16 @@ class Form extends FormItem implements ArrayAccess{
     
     public function wasSubmitted(){
         return $this->_wasSubmitted;
+    }
+
+    /**
+     * @brief Creates a new FormItem
+     *
+     * @param string $name Name of FormItem
+     * @return FormItem
+     **/
+    public static function create($data=NULL){
+        $class = get_called_class();
+        return new $class($data);
     }
 }

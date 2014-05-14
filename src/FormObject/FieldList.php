@@ -5,6 +5,7 @@ namespace FormObject;
 use \Countable;
 use \ArrayAccess;
 use \IteratorAggregate;
+use \OutOfBoundsException;
 
 class FieldList extends Field implements Countable, ArrayAccess, IteratorAggregate{
 
@@ -61,12 +62,12 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
 
     public function offsetGet($offset){
         if(isset($this->fields[$offset])){
-            return $this->fields[$offset];
+            if($this->fields[$offset] instanceof Field &&
+               !$this->fields[$offset] instanceof FieldList){
+                return $this->fields[$offset]->getValue();
+            }
         }
-        return $this->findDataField($offset);
-        if(isset($this->dataFields[$offset])){
-            return $this->dataFields[$offset];
-        }
+        return $this->findDataField($offset)->getValue();
     }
 
     public function offsetSet($offset, $value){
@@ -82,6 +83,10 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
         if($this->form){
             $value->setForm($this->form);
         }
+    }
+
+    public function holdsData(){
+        return FALSE;
     }
 
     public function offsetUnset($offset){
@@ -101,8 +106,28 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
     * @return FieldList
     */
     public function push(Field $field){
-        $this->offsetSet($field->getName(),$field);
+        $this->offsetSet($field->getName(), $field);
+        
+        $numArgs = func_num_args();
+
+        if($numArgs > 1){
+            $args = func_get_args();
+            for($i=i;$i<$numArgs;$i++){
+                $this->push($args[$i]);
+            }
+        }
         return $this;
+    }
+
+    public function get($fieldName){
+        if(isset($this->fields[$fieldName])){
+            return $this->fields[$fieldName];
+        }
+        return $this->findDataField($fieldName);
+    }
+
+    public function __invoke($fieldName){
+        return $this->get($fieldName);
     }
 
     public function count(){
@@ -125,6 +150,7 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
                 return $field;
             }
         }
+        throw new OutOfBoundsException("Datafield '$name' not found");
     }
 
     public function getDataFields(){

@@ -19,7 +19,7 @@ class Iterator implements \Iterator{
         $keys = $this->fieldList->getKeyOrder();
         $key = $keys[$this->position];
 
-        return $this->fieldList[$key];
+        return $this->fieldList->get($key);
     }
 
     public function key(){

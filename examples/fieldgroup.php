@@ -65,6 +65,8 @@ $container2->push($category);
 
 $form->push($container2);
 
+$form('surname')->setValue('Hunter');
+
 // $form->actions['submit'] = new Action();
 // $form->actions['submit']->setAction('submit');
 // $form->actions['submit']->setTitle('Submit');

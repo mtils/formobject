@@ -44,7 +44,7 @@ $rememberMyRadio->falseString = 'Forget my Radio';
 $rememberMyRadio->setValue(TRUE);
 $rememberMyRadio->mustBeTrue = TRUE;
 
-$container = new FieldList('group1', 'Group One');
+$container = new FieldList('group1', 'Tab One');
 $container->setSwitchable(TRUE);
 $form->push($container);
 
@@ -60,7 +60,7 @@ $category->setSrc(array(
     5 => 'Prospect'
 ))->setValue(2)->setRequired(TRUE);
 
-$container2 = new FieldList('group2', 'Group Two');
+$container2 = new FieldList('group2', 'Tab Two');
 $container2->setSwitchable(TRUE);
 $container2->push($category);
 
@@ -69,7 +69,7 @@ $form->push($container2);
 // $form->actions['submit'] = new Action();
 // $form->actions['submit']->setAction('submit');
 // $form->actions['submit']->setTitle('Submit');
-$form['surname']->setValue('Button');
+$form('surname')->setValue('Button');
 $form->fillByGlobals();
 
 $data = array();

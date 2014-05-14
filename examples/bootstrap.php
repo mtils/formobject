@@ -22,36 +22,39 @@ Registry::getRenderer()->addPath(dirname(__FILE__).'/themes/bootstrap/templates/
  * @brief ...
  * @var \FormObject\Form
  */
-$form = new Form;
-$form['name'] = new TextField;
-$form['name']->setValue("Billy");
-$form['name']->setTitle('Please enter your name');
-$form['name']->minLength = 3;
-$form['name']->maxLength = 12;
+$form = Form::create();
 
-$form['surname'] = new TextField;
-$form['surname']->setRequired(TRUE);
-$form['surname']->setValue("Talent");
-$form['surname']->setTitle('Please enter your surname');
+$form->push(
 
-$form['rememberMe'] = new CheckboxField;
-$form['rememberMe']->setTitle('Remember Me');
+    TextField::create('name')
+               ->setTitle('Please enter your name')
+               ->setValue('Billy')
+               ->setMinLength(3)
+               ->setMaxLength(12),
 
-$form['rememberMyRadio'] = new BooleanRadioField;
-$form['rememberMyRadio']->trueString = 'Remember my Radio';
-$form['rememberMyRadio']->falseString = 'Forget my Radio';
-$form['rememberMyRadio']->setValue(TRUE);
-$form['rememberMyRadio']->mustBeTrue = TRUE;
+    TextField::create('surname')
+               ->setTitle('Please enter your surname')
+               ->setValue('Talent')               
+               ->setRequired(TRUE),
 
-$form['message'] = new TextField;
-$form['message']->setRequired(TRUE);
-$form['message']->setValue("");
-$form['message']->setTitle('Message');
-$form['message']->multiLine = TRUE;
+    CheckboxField::create('rememberMe')
+                   ->setTitle('Remember Me'),
 
-// $form->actions['submit'] = new Action();
-// $form->actions['submit']->setAction('submit');
-// $form->actions['submit']->setTitle('Submit');
+    
+    BooleanRadioField::create('rememberMyRadio')
+                       ->setTitle('Remember my radio')
+                       ->setStringForTrue('Remember my radio')
+                       ->setStringForFalse('Forget my radio')
+                       ->setValue(TRUE)
+                       ->setMustBeTrue(TRUE),
+
+    TextField::create('message')
+               ->setTitle('Message')
+               ->setValue('')
+               ->setRequired(TRUE)
+               ->setMultiLine(TRUE)
+               
+);
 
 $form->fillByGlobals();
 $data = array();
