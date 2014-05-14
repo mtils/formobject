@@ -2,6 +2,7 @@
 
 namespace FormObject\Field;
 use FormObject\Field;
+use FormObject\Attributes;
 
 class TextField extends Field{
 
@@ -10,10 +11,8 @@ class TextField extends Field{
     public $htmlAllowed = NULL;
     public $multiLine = FALSE;
 
-    public function createAttributes(){
-        $attributes = parent::createAttributes();
-        $attributes['value'] = $this->value;
-        return $attributes;
+    protected function initAttributes(Attributes $attributes){
+        $attributes['type'] = 'text';
     }
 
     public function getValue(){

@@ -1,9 +1,14 @@
     <div class="form-group<? if(!$item->isValid()) echo ' has-error'; ?>">
     <? $item->addCssClass('form-control') ?>
-        <label for="<?= $item->id ?>"><?= $item->title ?></label><? if($item->className == 'TextField' && $item->multiLine): ?><textarea <?= $item->attributes->without('value') ?>><?= $item->value ?></textarea><? else: ?><input <?= $item->attributes ?>/><? endif ?>
+        <label for="<?= $item->id ?>"><?= $item->title ?></label>
+        <? if($item->className == 'TextField' && $item->multiLine): ?>
+            <textarea <?= $item->attributes->without('value') ?>><?= $item->value ?></textarea>
+        <? else: ?>
+            <input <?= $item->attributes ?>/>
+        <? endif ?>
         <? if(!$item->isValid()): ?>
-        <? foreach($item->messages as $error): ?>
-        <span class="help-inline"><?= $error ?></span>
-        <? endforeach ?>
+            <? foreach($item->messages as $error): ?>
+            <span class="help-inline"><?= $error ?></span>
+            <? endforeach ?>
         <? endif ?>
     </div>
