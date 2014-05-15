@@ -12,7 +12,7 @@ class SimpleFactory implements FactoryInterface{
             return $this->forTextField($item);
         }
         elseif($item instanceof \FormObject\Field\HiddenField){
-            return $this->forTextField($item);
+            return $this->forHiddenField($item);
         }
         elseif($item instanceof \FormObject\Field\BooleanField){
             return $this->forBooleanField($item);
@@ -31,8 +31,8 @@ class SimpleFactory implements FactoryInterface{
         }
     }
 
-    public function createForHiddenField($item){
-        $validator = new TextValidator();
+    public function forHiddenField($item){
+        $validator = new RequiredValidator();
         $validator->required = $item->isRequired();
         return $validator;
     }
