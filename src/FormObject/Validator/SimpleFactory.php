@@ -48,7 +48,7 @@ class SimpleFactory implements FactoryInterface{
         if($item->maxLength){
             $validator->maxLength = $item->maxLength;
         }
-        if($item->allowHtml){
+        if($item->isHtmlAllowed()){
             $validator->allowHtml = TRUE;
         }
         return $validator;
