@@ -1,0 +1,22 @@
+    <div class="form-group<? if(!$item->isValid()) echo ' has-error'; ?>">
+        <label for="<?=$item->id ?>"><?=$item->title ?></label>
+        <? if($item->className == 'MultiCheckboxField'): ?>
+        <br/>
+            <? foreach($item as $option): ?>
+                <label class="checkbox-inline"><input name="<?= $item->name ?>[]" type="checkbox" value="<?= $option->key ?>"<?= $option->selected ? ' checked="checked"' : '' ?>><?= $option ?></label>
+            <? endforeach ?>
+        <? else: ?>
+            <select <?=$item->addCssClass('form-control')->attributes->without('name')->set('multiple','multiple') ?> name="<?= $item->getName() ?>[]" ?>>
+            <? foreach($item as $option): ?>
+            <option value="<?= $option->key ?>"<?= $option->selected ? ' selected="selected"' : '' ?>><?= $option ?></option>
+            <? endforeach ?>
+            </select>
+        <? endif ?>
+        <? if(!$item->isValid()): ?>
+        <? foreach($item->messages as $error): ?>
+        <span class="help-inline"><?= $error ?></span>
+        <? endforeach ?>
+        <? elseif($item->description): ?>
+        <span class="help-inline"><?= $item-description ?></span>
+        <? endif ?>
+    </div>

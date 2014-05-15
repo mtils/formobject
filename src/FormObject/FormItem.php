@@ -36,6 +36,12 @@ class FormItem{
     */
     protected $attributes = NULL;
 
+    /**
+     * @brief Classname for Templates
+     * @var string
+     */
+    protected $className = '';
+
     public function getId(){
         return $this->id;
     }
@@ -130,7 +136,15 @@ class FormItem{
     }
 
     public function getClassName(){
-        return join('', array_slice(explode('\\', get_class($this)), -1));
+        if(!$this->className){
+            return join('', array_slice(explode('\\', get_class($this)), -1));
+        }
+        return $this->className;
+    }
+
+    public function setClassName($className){
+        $this->className = $className;
+        return $this;
     }
 
     public function __toString(){

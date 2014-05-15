@@ -4,7 +4,7 @@ use Collection\Iterator\CastableIterator;
 use Collection\Map\Extractor;
 use FormObject\Field;
 
-class ComboboxField extends Field implements Selectable{
+class SelectOneField extends Field implements Selectable{
 
     protected $src;
 

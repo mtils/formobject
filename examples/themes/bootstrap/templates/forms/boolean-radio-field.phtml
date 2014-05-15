@@ -1,12 +1,12 @@
 <? foreach($item as $option): ?>
-<div class="radio">
-<label><input type="radio" name="<?=$item->name ?>" value="<?= $option->key ?>" <?= $option->selected ? ' checked="checked"' : '' ?>/> <?= $option ?></label>
-</div>
+    <div class="radio">
+        <label><input type="radio" name="<?=$item->name ?>" value="<?= $option->key ?>" <?= $option->selected ? ' checked="checked"' : '' ?>/> <?= $option ?></label>
+    </div>
 <? endforeach ?>
 <? if(!$item->isValid()): ?>
-<? foreach($item->messages as $error): ?>
-<span class="help-inline"><?= $error ?></span>
-<? endforeach ?>
+    <? foreach($item->messages as $error): ?>
+        <span class="help-inline"><?= $error ?></span>
+    <? endforeach ?>
 <? elseif($item->description): ?>
-<span class="help-inline"><?= $item-description ?></span>
+    <span class="help-inline"><?= $item-description ?></span>
 <? endif ?>

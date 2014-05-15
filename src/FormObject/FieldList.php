@@ -112,7 +112,7 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
 
         if($numArgs > 1){
             $args = func_get_args();
-            for($i=i;$i<$numArgs;$i++){
+            for($i=0;$i<$numArgs;$i++){
                 $this->push($args[$i]);
             }
         }
@@ -193,5 +193,24 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
         if($this->parent instanceof self){
             $this->parent->_removeDataField($field);
         }
+    }
+
+    public function isFirstField(Field $field){
+        if(isset($this->keyOrder[0])){
+            if($this->keyOrder[0] == $field->getName()){
+                return TRUE;
+            }
+        }
+        return FALSE;
+    }
+
+    public function isLastField(Field $field){
+        $last = (count($this->keyOrder)-1);
+        if(isset($this->keyOrder[$last])){
+            if($this->keyOrder[$last] == $field->getName()){
+                return TRUE;
+            }
+        }
+        return FALSE;
     }
 }

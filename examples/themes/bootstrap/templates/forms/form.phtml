@@ -1,17 +1,16 @@
 <? $item->setAttribute('role','form') ?>
 <form <?= $item->attributes ?>>
-<? $i = 0; $last = (count($item->fields->fieldLists())-1); $isTabbed = FALSE; ?>
+<? $isTabbed = FALSE; ?>
 <? foreach($item->fields->fieldLists() as $field): ?>
     <? if($field->switchable): ?>
         <? $isTabbed = TRUE ?>
-        <? if($i == 0): ?>
+        <? if($field->isFirst()): ?>
         <ul id="tabs-<?= $item->id ?>" class="nav nav-tabs">
         <? endif ?>
-        <li<? if($i == 0): ?> class="active"<? endif ?>><a href="#<?= $field->id ?>" data-toggle="tab"><?= $field->title ?></a></li>
-        <? if($i == $last): ?>
+        <li<? if($field->isFirst()): ?> class="active"<? endif ?>><a href="#<?= $field->id ?>" data-toggle="tab"><?= $field->title ?></a></li>
+        <? if($field->isLast($field)): ?>
         </ul>
         <? endif ?>
-    <? $i++ ?>
     <? else: ?>
     <?= $field->className ?>
     <? endif ?>
@@ -19,14 +18,7 @@
 <? if($isTabbed): ?>
 <div class="tab-content">
 <? endif ?>
-<? $i = 0 ?>
 <? foreach($item->fields as $field): ?>
-    <? if($i==0 && $field->className == 'FieldList'): ?>
-        <? $field->isFirst = TRUE; ?>
-        <? $i++ ?>
-    <? else: ?>
-        <? $field->isFirst = FALSE; ?>
-    <? endif ?>
     <? if($field->className == 'HiddenField'): ?>
        <input <?=$field->attributes ?> />
     <? else: ?>
@@ -36,7 +28,7 @@
 <? if($isTabbed): ?>
 </div>
 <? endif ?>
-<? foreach($item->actions as $field): ?>
-    <button type="submit" value="<?= $field->action ?>" class="<?= $field->cssClasses->append('btn')->append('btn-primary') ?>"><?= $field->title ?></button>
+<? foreach($item->actions as $action): ?>
+    <button type="submit" name="<?= $action->action ?>" value="<?= $action->value ?>" class="<?= $action->cssClasses->append('btn')->append('btn-primary') ?>"><?= $action->title ?></button>
 <? endforeach ?>
 </form>

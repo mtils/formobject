@@ -37,7 +37,6 @@ class Validator implements ValidatorInterface{
             $msg = $myMessages[$msgKey];
         }
         $vars = $this->getMessageVars();
-
         return str_replace(array_keys($vars), array_values($vars), $msg);
     }
 
@@ -60,7 +59,9 @@ class Validator implements ValidatorInterface{
         $refl = new ReflectionClass($this);
         $messageVars = array();
         foreach($refl->getProperties(ReflectionProperty::IS_PUBLIC) as $prop){
-            $messageVars['{'.$prop->getName().'}'] = $this->{$prop->getName()};
+            if(is_scalar($this->{$prop->getName()})){
+                $messageVars['{'.$prop->getName().'}'] = $this->{$prop->getName()};
+            }
         }
         return $messageVars;
     }

@@ -15,7 +15,8 @@ use FormObject\Field\TextField;
 use FormObject\Field\Action;
 use FormObject\Field\CheckboxField;
 use FormObject\Field\BooleanRadioField;
-use FormObject\Field\ComboboxField;
+use FormObject\Field\SelectOneField;
+use FormObject\Field\SelectManyField;
 
 
 Registry::getRenderer()->addPath(dirname(__FILE__).'/themes/bootstrap/templates/forms');
@@ -50,31 +51,52 @@ $form->push($container);
 
 $container->push($name)->push($surname)->push($rememberMe)->push($rememberMyRadio);
 
-$category = new ComboboxField('category','User Category');
+$category = new SelectOneField('category','User Category');
 
-$category->setSrc(array(
+$categories = array(
     1 => 'Customer',
     2 => 'Co-Worker',
     3 => 'Family',
     4 => 'Organisation',
     5 => 'Prospect'
-))->setValue(2)->setRequired(TRUE);
+);
+
+$tags = array(
+    1 => 'New',
+    2 => 'Partner',
+    3 => 'Important',
+    4 => 'Reused'
+);
+
+$category->setSrc($categories)->setValue(2)->setRequired(TRUE);
+
+$tagsField = SelectManyField::create('tags')->setTitle('Tags')->setSrc($tags);
+
+$category2 = SelectOneField::create('category2','User Category 2');
+$category2->setSrc($categories)->setClassName('RadioButtonsField');
+
+$tags2 = SelectManyField::create('tags2')->setTitle('Tags 2')->setSrc($tags);
+$tags2->setClassName('MultiCheckboxField');
 
 $container2 = new FieldList('group2', 'Tab Two');
 $container2->setSwitchable(TRUE);
-$container2->push($category);
+$container2->push($category)->push($tagsField)->push($category2)->push($tags2);
+
+
 
 $form->push($container2);
 
-// $form->actions['submit'] = new Action();
-// $form->actions['submit']->setAction('submit');
-// $form->actions['submit']->setTitle('Submit');
+
+
+$form->actions->push(Action::create('delete')->setTitle('Delete'));
+
 $form('surname')->setValue('Button');
 $form->fillByGlobals();
 
 $data = array();
 if($form->wasSubmitted()){
     $data = $form->data;
+//     print_r($_GET);
 }
 
 include dirname(__FILE__).'/themes/bootstrap/templates/index.phtml';
