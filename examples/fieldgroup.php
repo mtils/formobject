@@ -15,7 +15,7 @@ use FormObject\Field\TextField;
 use FormObject\Field\Action;
 use FormObject\Field\CheckboxField;
 use FormObject\Field\BooleanRadioField;
-use FormObject\Field\ComboboxField;
+use FormObject\Field\SelectOneField;
 
 
 Registry::getRenderer()->addPath(dirname(__FILE__).'/themes/bootstrap/templates/forms');
@@ -50,7 +50,7 @@ $form->push($container);
 
 $container->push($name)->push($surname)->push($rememberMe)->push($rememberMyRadio);
 
-$category = new ComboboxField('category','User Category');
+$category = new SelectOneField('category','User Category');
 
 $category->setSrc(array(
     1 => 'Customer',

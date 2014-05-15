@@ -1,16 +1,17 @@
     <div class="form-group<? if(!$item->isValid()) echo ' has-error'; ?>">
         <label for="<?=$item->id ?>"><?=$item->title ?></label>
-        <? if($item->className == 'MultiCheckboxField'): ?>
-        <br/>
-            <? foreach($item as $option): ?>
-                <label class="checkbox-inline"><input name="<?= $item->name ?>[]" type="checkbox" value="<?= $option->key ?>"<?= $option->selected ? ' checked="checked"' : '' ?>><?= $option ?></label>
-            <? endforeach ?>
-        <? else: ?>
-            <select <?=$item->addCssClass('form-control')->attributes->without('name')->set('multiple','multiple') ?> name="<?= $item->getName() ?>[]" ?>>
+        <? if($item->className == 'SelectOneField'): ?>
+            <select <?=$item->addCssClass('form-control')->attributes?>>
             <? foreach($item as $option): ?>
             <option value="<?= $option->key ?>"<?= $option->selected ? ' selected="selected"' : '' ?>><?= $option ?></option>
             <? endforeach ?>
             </select>
+        <? elseif($item->className == 'RadioButtonsField'): ?>
+            <? foreach($item as $option): ?>
+                <div class="radio">
+                    <label><input type="radio" name="<?=$item->name ?>" value="<?= $option->key ?>" <?= $option->selected ? ' checked="checked"' : '' ?>/> <?= $option ?></label>
+                </div>
+            <? endforeach ?>
         <? endif ?>
         <? if(!$item->isValid()): ?>
         <? foreach($item->messages as $error): ?>

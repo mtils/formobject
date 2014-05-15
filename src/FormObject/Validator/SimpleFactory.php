@@ -20,7 +20,7 @@ class SimpleFactory implements FactoryInterface{
         elseif($item instanceof \FormObject\Field\BooleanField){
             return $this->forBooleanField($item);
         }
-        elseif($item instanceof \FormObject\Field\ComboboxField){
+        elseif($item instanceof \FormObject\Field\SelectOneField){
             return $this->forSelectOneField($item);
         }
         elseif($item instanceof \FormObject\Field\SelectManyField){
