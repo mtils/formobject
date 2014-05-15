@@ -112,7 +112,7 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
 
         if($numArgs > 1){
             $args = func_get_args();
-            for($i=i;$i<$numArgs;$i++){
+            for($i=0;$i<$numArgs;$i++){
                 $this->push($args[$i]);
             }
         }
