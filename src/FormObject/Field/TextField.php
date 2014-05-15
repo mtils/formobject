@@ -48,6 +48,7 @@ class TextField extends Field{
 
     public function setHtmlAllowed($allowed){
         $this->htmlAllowed = $allowed;
+        return $this;
     }
 
     public function allowHtml($allowed=TRUE){
