@@ -19,4 +19,8 @@ class LaravelForm extends Form{
         }
         return $form;
     }
+
+    protected function createValidatorAdapter($validator){
+        return new ValidatorAdapter($this, $validator);
+    }
 }

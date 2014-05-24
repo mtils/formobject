@@ -96,12 +96,16 @@ class Form extends FormItem implements ArrayAccess{
 
     public function getValidator(){
         if(!$this->validator){
-            $this->validator = new SimpleValidator($this);
+            $this->validator = $this->createValidator();
         }
         return $this->validator;
     }
 
-    public function setValidator(ValidatorAdapterInterface $validator){
+    protected function createValidator(){
+        return new SimpleValidator($this);
+    }
+
+    public function setValidator($validator){
         $this->validator = $validator;
         return $this;
     }
