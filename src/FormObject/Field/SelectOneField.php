@@ -3,6 +3,7 @@
 use Collection\Iterator\CastableIterator;
 use Collection\Map\Extractor;
 use FormObject\Field;
+use FormObject\Attributes;
 
 class SelectOneField extends Field implements Selectable{
 
@@ -14,6 +15,16 @@ class SelectOneField extends Field implements Selectable{
         parent::__construct($name, $title);
 
         $this->manualExtractor = new Extractor(Extractor::KEY, Extractor::VALUE);
+    }
+
+    public function updateAttributes(Attributes $attributes){
+        parent::updateAttributes($attributes);
+        try{
+            unset($attributes['value']);
+        }
+        catch(OutOfBoundsException $e){
+            
+        }
     }
 
     public function setValue($value){

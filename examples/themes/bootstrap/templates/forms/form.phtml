@@ -4,10 +4,10 @@
 <? foreach($item->fields->fieldLists() as $field): ?>
     <? if($field->switchable): ?>
         <? $isTabbed = TRUE ?>
-        <? if($field->isFirst()): ?>
+        <? if($field->isFirstList()): ?>
         <ul id="tabs-<?= $item->id ?>" class="nav nav-tabs">
         <? endif ?>
-        <li<? if($field->isFirst()): ?> class="active"<? endif ?>><a href="#<?= $field->id ?>" data-toggle="tab"><?= $field->title ?></a></li>
+        <li<? if($field->isFirstList()): ?> class="active"<? endif ?>><a href="#<?= $field->id ?>" data-toggle="tab"><?= $field->title ?></a></li>
         <? if($field->isLast($field)): ?>
         </ul>
         <? endif ?>

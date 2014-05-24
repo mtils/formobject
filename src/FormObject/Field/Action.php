@@ -8,10 +8,6 @@ class Action extends \FormObject\Field{
 
     protected $_isSelected = FALSE;
 
-    protected function initAttributes_(Attributes $attributes){
-//         $this->setName($this->action);
-    }
-
     public function getAction(){
         if($this->form){
             return $this->form->getName() . '_' . parent::getName();

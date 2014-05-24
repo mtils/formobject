@@ -17,6 +17,11 @@ use FormObject\Field\CheckboxField;
 use FormObject\Field\BooleanRadioField;
 use FormObject\Field\SelectOneField;
 use FormObject\Field\SelectManyField;
+use FormObject\Validator\SimpleValidator;
+use FormObject\Validator\TextValidator;
+use FormObject\Validator\BooleanValidator;
+use FormObject\Validator\RequiredValidator;
+
 
 
 Registry::getRenderer()->addPath(dirname(__FILE__).'/themes/bootstrap/templates/forms');
@@ -30,11 +35,8 @@ $form->setMethod(Form::GET);
 
 $name = new TextField('name', 'Please enter your name');
 $name->setValue('Jennifer');
-$name->minLength = 3;
-$name->maxLength = 12;
 
 $surname = new TextField('surname','Please enter your surname');
-$surname->setRequired(TRUE);
 $surname->setValue('Batten');
 
 $rememberMe = new CheckboxField('remember','Remember Me');
@@ -43,7 +45,6 @@ $rememberMyRadio = new BooleanRadioField('rememberMyRadio');
 $rememberMyRadio->trueString = 'Remember my Radio';
 $rememberMyRadio->falseString = 'Forget my Radio';
 $rememberMyRadio->setValue(TRUE);
-$rememberMyRadio->mustBeTrue = TRUE;
 
 $container = new FieldList('group1', 'Tab One');
 $container->setSwitchable(TRUE);
@@ -68,7 +69,7 @@ $tags = array(
     4 => 'Reused'
 );
 
-$category->setSrc($categories)->setValue(2)->setRequired(TRUE);
+$category->setSrc($categories)->setValue(2);
 
 $tagsField = SelectManyField::create('tags')->setTitle('Tags')->setSrc($tags);
 
@@ -91,12 +92,31 @@ $form->push($container2);
 $form->actions->push(Action::create('delete')->setTitle('Delete'));
 
 $form('surname')->setValue('Button');
+
+$nameValidator = new TextValidator();
+$nameValidator->required = FALSE;
+$nameValidator->minLength = 3;
+$nameValidator->setMaxLength = 12;
+
+$requiredValidator = new RequiredValidator;
+$requiredValidator->required = TRUE;
+
+$trueValidator = new BooleanValidator();
+$trueValidator->mustBeTrue = TRUE;
+
+$validator = new SimpleValidator($form);
+$validator->set('name', $nameValidator);
+$validator->set('surname', $requiredValidator);
+$validator->set('rememberMyRadio', $trueValidator);
+$validator->set('category', $requiredValidator);
+
+$form->setValidator($validator);
+
 $form->fillByGlobals();
 
 $data = array();
 if($form->wasSubmitted()){
     $data = $form->data;
-//     print_r($_GET);
 }
 
 include dirname(__FILE__).'/themes/bootstrap/templates/index.phtml';

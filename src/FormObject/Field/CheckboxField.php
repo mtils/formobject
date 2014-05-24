@@ -5,10 +5,21 @@ use FormObject\Attributes;
 
 class CheckboxField extends BooleanField{
 
-    protected function initAttributes(Attributes $attributes){
+    protected function updateAttributes(Attributes $attributes){
+        parent::updateAttributes($attributes);
         $attributes['value'] = '1';
         $attributes['type'] = 'checkbox';
-        $this->setValue($this->value);
+        if($this->value){
+            $attributes->set('checked','checked');
+        }
+        else{
+            try{
+                $attributes->offsetUnset('checked');
+            }
+            catch(\OutOfBoundsException $e){
+                // Do nothing
+            }
+        }
     }
 
     public function getValue(){
@@ -16,20 +27,7 @@ class CheckboxField extends BooleanField{
     }
 
     public function setValue($value){
-
         $this->value = (bool)$value;
-
-        if($this->value){
-            $this->attributes->set('checked','checked');
-        }
-        else{
-            try{
-                $this->attributes->offsetUnset('checked');
-            }
-            catch(\OutOfBoundsException $e){
-                // Do nothing
-            }
-        }
         return $this;
     }
     public function setFromRequest($value){

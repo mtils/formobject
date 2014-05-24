@@ -5,6 +5,8 @@ namespace FormObject;
 use \ArrayAccess;
 use \FormObject\Field\Action;
 use \FormObject\Field\HiddenField;
+use \FormObject\Validator\ValidatorAdapterInterface;
+use FormObject\Validator\SimpleValidator;
 
 class Form extends FormItem implements ArrayAccess{
 
@@ -39,6 +41,11 @@ class Form extends FormItem implements ArrayAccess{
 
     protected $dataOrigin;
 
+    protected $validator = NULL;
+
+    protected $validatorAdapter = NULL;
+
+
     /**
     * @brief multipart/form-data
     * @var string
@@ -55,7 +62,6 @@ class Form extends FormItem implements ArrayAccess{
         $this->getAction();
         $this->getMethod();
         $this->getEncType();
-        $this->getAttributes()->set('method',$this->method);
 
         if(is_object($data)){
             $this->fillBy($data);
@@ -63,6 +69,41 @@ class Form extends FormItem implements ArrayAccess{
         elseif(is_array($data)){
             $this->fillByArray($data);
         }
+    }
+
+    protected function updateAttributes(Attributes $attributes){
+        parent::updateAttributes($attributes);
+        $attributes['method'] = $this->getMethod();
+        $attributes['enctype'] = $this->getEncType();
+        $attributes['action'] = $this->getAction();
+    }
+
+    public function getValidatorAdapter(){
+        if(!$this->validatorAdapter){
+            $this->validatorAdapter = $this->createValidatorAdapter($this->getValidator());
+        }
+        return $this->validatorAdapter;
+    }
+
+    public function setValidatorAdapter(ValidatorAdapterInterface $adapter){
+        $this->validatorAdapter = $adapter;
+        return $this;
+    }
+
+    protected function createValidatorAdapter($validator){
+        return $this->getValidator();
+    }
+
+    public function getValidator(){
+        if(!$this->validator){
+            $this->validator = new SimpleValidator($this);
+        }
+        return $this->validator;
+    }
+
+    public function setValidator(ValidatorAdapterInterface $validator){
+        $this->validator = $validator;
+        return $this;
     }
 
     public function getDataOrigin(){
@@ -73,8 +114,6 @@ class Form extends FormItem implements ArrayAccess{
         $fields = new FieldList;
         $fields->setForm($this);
         $fields->setName('_root');
-
-//         $fields->push(HiddenField::create('_wasSubmitted')->setValue(1));
         return $fields;
     }
 
@@ -110,7 +149,6 @@ class Form extends FormItem implements ArrayAccess{
     
     public function setEncType($encType){
         $this->encType = $encType;
-        $this->getAttributes()->set('enctype',$encType);
         return $this;
     }
 
@@ -167,17 +205,8 @@ class Form extends FormItem implements ArrayAccess{
 
     public function setAction($action){
         $this->action = $action;
-        $this->getAttributes()->set('action', $action);
         return $this;
     }
-
-//     public function createAttributes(){
-//         $attributes = parent::createAttributes();
-//         $attributes['action'] = $this->getAction();
-//         $attributes['method'] = $this->method;
-//         $attributes['enctype'] = $this->encType;
-//         return $attributes;
-//     }
 
     public function getMethod(){
         return $this->method;
@@ -185,7 +214,6 @@ class Form extends FormItem implements ArrayAccess{
 
     public function setMethod($method){
         $this->method = $method;
-        $this->getAttributes()->set('method', $method);
         return $this;
     }
 

@@ -4,7 +4,9 @@ $libDir = realpath(dirname(__FILE__) . '/../../src');
 $collectionsDir = realpath(dirname(__FILE__) . '/../../../collection/src');
 $exampleDir = realpath(dirname(__FILE__) . '/../');
 
-set_include_path(implode(PATH_SEPARATOR,array($libDir, $collectionsDir, $exampleDir)));
+$dirs = array($libDir, $collectionsDir, $exampleDir);
+
+set_include_path(implode(PATH_SEPARATOR, $dirs));
 
 
 function includeFileByClassName($className){

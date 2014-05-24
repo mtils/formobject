@@ -17,9 +17,15 @@ class Attributes extends StringDictionary{
 
     public function __toString(){
         $rows = array();
-        foreach($this as $key=>$value){
-            $rows[] = "{$key}{$this->keyValueDelimiter}\"" . self::valueEncode("$value") . '"';
-        }
+//         var_dump($this);
+//         try{
+            foreach($this as $key=>$value){
+                $rows[] = "{$key}{$this->keyValueDelimiter}\"" . self::valueEncode("$value") . '"';
+            }
+//         }
+//         catch(\Exception $e){
+//             echo "HHIIIAAA: ".$e->getMessage() . $e->getLine().$e->getFile();
+//         }
         return $this->prefix . implode($this->rowDelimiter, $rows) . $this->suffix;
     }
 

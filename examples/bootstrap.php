@@ -14,7 +14,10 @@ use FormObject\Field\TextField;
 use FormObject\Field\Action;
 use FormObject\Field\CheckboxField;
 use FormObject\Field\BooleanRadioField;
-
+use FormObject\Validator\SimpleValidator;
+use FormObject\Validator\TextValidator;
+use FormObject\Validator\BooleanValidator;
+use FormObject\Validator\RequiredValidator;
 
 Registry::getRenderer()->addPath(dirname(__FILE__).'/themes/bootstrap/templates/forms');
 
@@ -28,33 +31,46 @@ $form->push(
 
     TextField::create('name')
                ->setTitle('Please enter your name')
-               ->setValue('Billy')
-               ->setMinLength(3)
-               ->setMaxLength(12),
+               ->setValue('Billy'),
 
     TextField::create('surname')
                ->setTitle('Please enter your surname')
-               ->setValue('Talent')               
-               ->setRequired(TRUE),
+               ->setValue('Talent'),
 
     CheckboxField::create('rememberMe')
                    ->setTitle('Remember Me'),
 
-    
+
     BooleanRadioField::create('rememberMyRadio')
                        ->setTitle('Remember my radio')
                        ->setStringForTrue('Remember my radio')
                        ->setStringForFalse('Forget my radio')
-                       ->setValue(TRUE)
-                       ->setMustBeTrue(TRUE),
+                       ->setValue(TRUE),
 
     TextField::create('message')
                ->setTitle('Message')
                ->setValue('')
-               ->setRequired(TRUE)
                ->setMultiLine(TRUE)
-               
 );
+
+$nameValidator = new TextValidator();
+$nameValidator->required = FALSE;
+$nameValidator->minLength = 3;
+$nameValidator->setMaxLength = 12;
+
+$surnameValidator = new RequiredValidator;
+$surnameValidator->required = TRUE;
+
+$requiredValidator = new BooleanValidator();
+$requiredValidator->mustBeTrue = TRUE;
+
+$validator = new SimpleValidator($form);
+$validator->set('name', $nameValidator);
+$validator->set('surname', $surnameValidator);
+$validator->set('rememberMyRadio', $requiredValidator);
+$validator->set('message', $requiredValidator);
+
+$form->setValidator($validator);
 
 $form->fillByGlobals();
 $data = array();

@@ -6,13 +6,10 @@ use FormObject\Attributes;
 
 class PasswordField extends TextField{
 
-    public $minLength = NULL;
-    public $maxLength = NULL;
-    public $htmlAllowed = NULL;
     public $multiLine = FALSE;
 
-    protected function initAttributes(Attributes $attributes){
-        parent::initAttributes($attributes);
+    protected function updateAttributes(Attributes $attributes){
+        parent::updateAttributes($attributes);
         $attributes['type'] = 'password';
     }
 

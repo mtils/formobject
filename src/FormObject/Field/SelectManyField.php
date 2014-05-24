@@ -3,6 +3,8 @@
 use Collection\Iterator\CastableIterator;
 use Collection\Map\Extractor;
 use FormObject\Field;
+use FormObject\Attributes;
+use OutOfBoundsException;
 
 class SelectManyField extends Field implements Selectable{
 
@@ -16,6 +18,16 @@ class SelectManyField extends Field implements Selectable{
         $this->manualExtractor = new Extractor(Extractor::KEY, Extractor::VALUE);
     }
 
+    public function updateAttributes(Attributes $attributes){
+        parent::updateAttributes($attributes);
+        try{
+            unset($attributes['value']);
+        }
+        catch(OutOfBoundsException $e){
+            
+        }
+    }
+
     public function setValue($value){
         if(!$value){
             $this->value = array();
@@ -27,6 +39,11 @@ class SelectManyField extends Field implements Selectable{
     }
 
     public function isItemSelected(SelectableProxy $item){
+
+        if(!$this->value){
+            return FALSE;
+        }
+
         foreach($this->value as $key){
             if($item->getKey() == $key){
                 return TRUE;

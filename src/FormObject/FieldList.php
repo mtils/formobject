@@ -213,4 +213,26 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
         }
         return FALSE;
     }
+
+    public function isFirstList(){
+        if($this->parent){
+            $fieldListCount = 0;
+            foreach($this->parent as $field){
+                if($field instanceof self){
+                    if( $field == $this && $fieldListCount == 0){
+                        return TRUE;
+                    }
+                $fieldListCount++;
+                }
+            }
+        }
+        return FALSE;
+    }
+
+    public function isLastList(){
+        if($this->parent){
+            
+        }
+        return FALSE;
+    }
 }

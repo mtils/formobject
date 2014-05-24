@@ -48,7 +48,6 @@ class FormItem{
 
     public function setId($id){
         $this->id = $id;
-        $this->getAttributes()->set('id', $id);
         return $this;
     }
 
@@ -58,7 +57,6 @@ class FormItem{
 
     public function setName($name){
         $this->name = $name;
-        $this->getAttributes()->set('name', $name);
         return $this;
     }
 
@@ -84,7 +82,6 @@ class FormItem{
 
     public function setTooltip($tooltip){
         $this->tooltip = $tooltip;
-        $this->getAttributes()->set('title', $tooltip);
         return $this;
     }
 
@@ -105,7 +102,6 @@ class FormItem{
                 $this->cssClasses->append(self::phpClassNameToCssClassName($className));
             }
             $this->cssClasses->append($this->getName());
-            $this->getAttributes()->setRef('class', $this->cssClasses);
         }
     }
 
@@ -123,16 +119,24 @@ class FormItem{
     public function getAttributes(){
         if($this->attributes === NULL){
             $this->attributes = new Attributes();
+            $this->attributes->setRef('class', $this->cssClasses);
             $this->initCssClasses();
         }
+        $this->updateAttributes($this->attributes);
         return $this->attributes;
+    }
+
+    protected function updateAttributes(Attributes $attributes){
+        $attributes['id'] = $this->getId();
+        $attributes['name'] = $this->getName();
+        $attributes['title'] = $this->getTooltip();
     }
 
     public function setAttribute($key, $value){
         if(in_array(strtolower($key), array('id','name','class','title'))){
             throw new Exception("Please use the methods for id, name and class");
         }
-        $this->attributes->set($key,$value);
+        $this->getAttributes()->set($key,$value);
     }
 
     public function getClassName(){
@@ -154,6 +158,7 @@ class FormItem{
         }
         // No exceptions inside __toString
         catch(\Exception $e){
+            return $e->getMessage() . " Line:" . $e->getLine() . " File:" . $e->getFile();
             trigger_error($e->getMessage(),E_USER_WARNING);
         }
         return "";

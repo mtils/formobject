@@ -1,6 +1,6 @@
 <?php namespace FormObject;
 
-// use FormObject\Validator;
+use FormObject\Attributes;
 
 class Field extends FormItem{
 
@@ -17,9 +17,9 @@ class Field extends FormItem{
 
     protected $childs;
 
-    protected $required;
-
     protected $valid = NULL;
+
+    protected $ruleClassesAdded = FALSE;
 
     /**
     * @brief The field validator
@@ -29,7 +29,7 @@ class Field extends FormItem{
     protected $validator = NULL;
 
     public function __construct($name=NULL, $title=NULL){
-        
+
         if($name !== NULL){
             $this->setName($name);
         }
@@ -37,12 +37,19 @@ class Field extends FormItem{
         if($title !== NULL){
             $this->setTitle($title);
         }
-        $this->initAttributes($this->getAttributes());
     }
 
-    protected function initAttributes(Attributes $attributes){
-        // Do nothing
+    public function initCssClasses(){
+        parent::initCssClasses();
+        if(!$this->ruleClassesAdded && $this->form){
+            foreach($this->form->getValidatorAdapter()->getRuleNames($this->name) as $ruleName){
+                $this->cssClasses->append($ruleName);
+            }
+            $this->ruleClassesAdded = TRUE;
+        }
+        return $this->cssClasses;
     }
+
 
     public function getId(){
         if(!$this->id){
@@ -67,8 +74,12 @@ class Field extends FormItem{
 
     public function setValue($value){
         $this->value = $value;
-        $this->getAttributes()->set('value',$value);
         return $this;
+    }
+
+    protected function updateAttributes(Attributes $attributes){
+        parent::updateAttributes($attributes);
+        $attributes['value'] = $this->value;
     }
 
     public function setFromRequest($value){
@@ -106,35 +117,20 @@ class Field extends FormItem{
         return TRUE;
     }
 
-    public function getValidator(){
-        if(!$this->validator){
-            $this->validator = Registry::getValidatorFactory()
-                                         ->createForField($this);
-        }
-        return $this->validator;
-    }
-
-    public function setValidator($validator){
-        $this->validator = $validator;
-    }
-
-    protected function createValidator(){
-        return new Validator();
-    }
-
     public function isValid(){
         if(!$this->form->needsValidation()){
             return TRUE;
         }
 
         if($this->valid === NULL){
-            $this->valid = $this->getValidator()->isValid($this->getValue());
+            $this->valid = !$this->form->getValidatorAdapter()->hasErrors($this->name);
         }
+
         return $this->valid;
     }
 
     public function isRequired(){
-        return $this->required;
+        return $this->form->getValidatorAdapter()->isRequired($this->name);
     }
 
     /**
@@ -146,13 +142,8 @@ class Field extends FormItem{
         return $this->isRequired();
     }
 
-    public function setRequired($required){
-        $this->required = $required;
-        return $this;
-    }
-
     public function getMessages(){
-        return $this->getValidator()->getMessages();
+        return $this->form->getValidatorAdapter()->getMessages($this->name);
     }
 
     /**
