@@ -197,8 +197,8 @@ class Form extends FormItem implements ArrayAccess{
 
     public function getAction(){
         if(!$this->action){
-            if(isset($_SERVER) && isset($_SERVER['REQUEST_URI'])){
-                $this->setAction($_SERVER['REQUEST_URI']);
+            if(isset($_SERVER) && isset($_SERVER['PATH_INFO'])){
+                $this->setAction($_SERVER['PATH_INFO']);
             }
             else{
                 $this->setAction('./');
