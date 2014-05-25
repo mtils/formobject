@@ -5,6 +5,7 @@ use FormObject\Form;
 use FormObject\Field\HiddenField;
 use \App;
 use Illuminate\Validation\Validator;
+use URL;
 
 class LaravelForm extends Form{
 
@@ -42,5 +43,12 @@ class LaravelForm extends Form{
             $attributeNames[$field->getName()] = $field->getTitle();
         }
         return $attributeNames;
+    }
+
+    public function getAction(){
+        if(!$this->action){
+            $this->setAction(URL::current());
+        }
+        return $this->action;
     }
 }
