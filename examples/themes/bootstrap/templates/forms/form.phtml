@@ -8,7 +8,7 @@
         <ul id="tabs-<?= $item->id ?>" class="nav nav-tabs">
         <? endif ?>
         <li<? if($field->isFirstList()): ?> class="active"<? endif ?>><a href="#<?= $field->id ?>" data-toggle="tab"><?= $field->title ?></a></li>
-        <? if($field->isLast($field)): ?>
+        <? if($field->isLastList()): ?>
         </ul>
         <? endif ?>
     <? else: ?>

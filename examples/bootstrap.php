@@ -81,7 +81,6 @@ $validator->set('message', $requiredValidator);
 
 $form->setValidator($validator);
 
-$form->fillByGlobals();
 $data = array();
 if($form->wasSubmitted()){
     $data = $form->data;

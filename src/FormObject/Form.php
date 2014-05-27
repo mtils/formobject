@@ -51,6 +51,8 @@ class Form extends FormItem implements ArrayAccess{
 
     protected $appendCsrfToken = FALSE;
 
+    protected $autoFillByRequest = FALSE;
+
 
     /**
     * @brief multipart/form-data
@@ -69,6 +71,10 @@ class Form extends FormItem implements ArrayAccess{
         $this->getAction();
         $this->getMethod();
         $this->getEncType();
+
+        if($this->autoFillByRequest){
+            $this->doAutoFillByRequest();
+        }
 
     }
 
@@ -245,10 +251,13 @@ class Form extends FormItem implements ArrayAccess{
         $this->dataOrigin = self::MANUAL;
     }
 
+    protected function doAutoFillByRequest(){
+        $this->fillByGlobals();
+    }
+
     public function fillByRequestArray($request){
 
         $this->_wasSubmitted = FALSE;
-
         foreach($this->actions as $action){
             if(isset($request[$action->getAction()]) && $request[$action->getAction()] == $action->getValue()){
                 $action->setSelected(TRUE);
@@ -271,10 +280,10 @@ class Form extends FormItem implements ArrayAccess{
     }
 
     public function fillByGlobals(){
-        if($this->method == self::GET){
+        if($this->getMethod() == self::GET){
             return $this->fillByRequestArray($_GET);
         }
-        elseif($this->method == self::POST){
+        elseif($this->getMethod() == self::POST){
             return $this->fillByRequestArray($_POST);
         }
     }

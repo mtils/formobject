@@ -16,6 +16,8 @@ class LaravelForm extends Form{
 
     protected $appendCsrfToken = TRUE;
 
+    protected $autoFillByRequest = TRUE;
+
     public function __construct(AdapterFactoryInterface $adapterFactory){
         parent::__construct($adapterFactory);
 
