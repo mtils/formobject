@@ -129,19 +129,6 @@ class Field extends FormItem{
         return $this->valid;
     }
 
-    public function isRequired(){
-        return $this->form->getValidatorAdapter()->isRequired($this->name);
-    }
-
-    /**
-    * @brief Same for overloading via __get
-    * 
-    * @return bool
-    */
-    public function getRequired(){
-        return $this->isRequired();
-    }
-
     public function getMessages(){
         return $this->form->getValidatorAdapter()->getMessages($this->name);
     }
@@ -157,5 +144,18 @@ class Field extends FormItem{
     public static function create($name=NULL, $title=NULL){
         $class = get_called_class();
         return new $class($name, $title);
+    }
+
+    public function __toString(){
+
+        try{
+            return $this->form->getAdapter()->getRenderer()->renderFormItem($this);
+        }
+        // No exceptions inside __toString
+        catch(\Exception $e){
+            return $e->getMessage() . " Line:" . $e->getLine() . " File:" . $e->getFile();
+            trigger_error($e->getMessage(),E_USER_WARNING);
+        }
+        return "";
     }
 }

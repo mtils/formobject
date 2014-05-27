@@ -13,8 +13,13 @@ class ValidatorAdapter implements ValidatorAdapterInterface{
         $this->form = $form;
     }
 
-    public function isRequired($fieldName){
-        return FALSE;
+    public function getValidator(){
+        return $this->validator;
+    }
+
+    public function setValidator($validator){
+        $this->validator = $validator;
+        return $this;
     }
 
     public function hasErrors($fieldName){

@@ -151,19 +151,6 @@ class FormItem{
         return $this;
     }
 
-    public function __toString(){
-
-        try{
-            return Registry::getRenderer()->renderFormItem($this);
-        }
-        // No exceptions inside __toString
-        catch(\Exception $e){
-            return $e->getMessage() . " Line:" . $e->getLine() . " File:" . $e->getFile();
-            trigger_error($e->getMessage(),E_USER_WARNING);
-        }
-        return "";
-    }
-
     public static function getRelevantCssClassNames($className){
 
         $classNames = array();

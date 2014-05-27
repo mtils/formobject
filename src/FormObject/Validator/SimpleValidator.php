@@ -16,6 +16,14 @@ class SimpleValidator implements ValidatorAdapterInterface{
         $this->form = $form;
     }
 
+    public function getValidator(){
+        return $this;
+    }
+
+    public function setValidator($validator){
+        return;
+    }
+
     public function set($fieldName, Validator $validator){
         $this->validators[$fieldName] = $validator;
     }

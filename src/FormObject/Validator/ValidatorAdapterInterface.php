@@ -2,12 +2,9 @@
 
 interface ValidatorAdapterInterface{
 
-    /**
-     * @brief Returns if the field is required
-     * @param string $fieldName
-     * @return bool
-     */
-    public function isRequired($fieldName);
+    public function getValidator();
+
+    public function setValidator($validator);
 
     /**
      * @brief Returns if the value of this field is valid

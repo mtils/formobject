@@ -2,6 +2,7 @@
 
 use DomainException;
 use FormObject\Form;
+use FormObject\AdapterFactoryInterface;
 use FormObject\Field\HiddenField;
 use \App;
 use Illuminate\Validation\Validator;
@@ -13,14 +14,16 @@ class LaravelForm extends Form{
 
     protected $sessionTokenName = '_token';
 
-    public static function make($data=NULL, $useSessionToken=TRUE){
-        $form = static::create($data);
-        if($useSessionToken){
+    protected $appendCsrfToken = TRUE;
+
+    public function __construct(AdapterFactoryInterface $adapterFactory){
+        parent::__construct($adapterFactory);
+
+        if($this->appendCsrfToken){
             $app = App::getFacadeRoot();
-            $form->push(HiddenField::create('_token')
-                            ->setValue($app['session.store']->getToken()));
+            $this->fields->push(HiddenField::create('_token')
+                                             ->setValue($app['session.store']->getToken()));
         }
-        return $form;
     }
 
     protected function createValidatorAdapter($validator){

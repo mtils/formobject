@@ -19,7 +19,6 @@ class PersonForm extends Form{
         $name->maxLength = 12;
 
         $surname = new TextField('surname','Please enter your surname');
-        $surname->setRequired(TRUE);
         $surname->setValue('Batten');
 
         $rememberMe = new CheckboxField('remember','Remember Me');

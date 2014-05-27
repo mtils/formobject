@@ -1,15 +1,18 @@
 <?php namespace FormObject\Support\Laravel;
 
 use Illuminate\Support\ServiceProvider;
+use Config;
 
 class FormObjectServiceProvider extends ServiceProvider {
 
-        /**
-         * Indicates if loading of the provider is deferred.
-         *
-         * @var bool
-         */
-        protected $defer = true;
+//         /**
+//          * Indicates if loading of the provider is deferred.
+//          *
+//          * @var bool
+//          */
+//         protected $defer = false;
+
+        protected $templatePath = '';
 
         /**
          * Register the service provider.
@@ -18,23 +21,29 @@ class FormObjectServiceProvider extends ServiceProvider {
          */
         public function register()
         {
-                $this->app->bindShared('form', function($app)
+                $this->app->singleton('FormObject\AdapterFactoryInterface', function($app)
                 {
-                        $form = new FormBuilder($app['html'], $app['url'], $app['session.store']->getToken());
-
-                        return $form->setSessionStore($app['session.store']);
+                        $adapter = new AdapterFactoryLaravel();
+                        $renderer = new \FormObject\Renderer\PhpRenderer();
+                        if($paths = Config::get('view.formpaths')){
+                            foreach($paths as $path){
+                                $renderer->addPath($path);
+                            }
+                        }
+                        $adapter->setRenderer($renderer);
+                        return $adapter;
                 });
         }
 
-        /**
-         * Get the services provided by the provider.
-         *
-         * @return array
-         */
-        public function provides()
-        {
-                return array('form');
-        }
+//         /**
+//          * Get the services provided by the provider.
+//          *
+//          * @return array
+//          */
+//         public function provides()
+//         {
+//                 return array('FormObject\AdapterFactoryInterface');
+//         }
 
 }
  

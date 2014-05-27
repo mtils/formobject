@@ -43,7 +43,13 @@ class Form extends FormItem implements ArrayAccess{
 
     protected $validator = NULL;
 
+    protected $adapterFactory = NULL;
+
     protected $validatorAdapter = NULL;
+
+    protected $autoRedirectOnPost = FALSE;
+
+    protected $appendCsrfToken = FALSE;
 
 
     /**
@@ -52,8 +58,9 @@ class Form extends FormItem implements ArrayAccess{
     */
     protected $encType = '';
 
-    public function __construct($data=NULL){
+    public function __construct(AdapterFactoryInterface $adapterFactory){
 
+        $this->adapterFactory = $adapterFactory;
         $this->fields = $this->createFields();
         $this->actions = $this->createActions();
 
@@ -63,12 +70,32 @@ class Form extends FormItem implements ArrayAccess{
         $this->getMethod();
         $this->getEncType();
 
-        if(is_object($data)){
-            $this->fillBy($data);
-        }
-        elseif(is_array($data)){
-            $this->fillByArray($data);
-        }
+    }
+
+    public function getAdapter(){
+        return $this->adapterFactory;
+    }
+
+    public function shouldAppendCsrfToken(){
+        return $this->appendCsrfToken;
+    }
+
+    public function setShouldAppendCsrfToken($should){
+        $this->appendCsrfToken = $should;
+        return $this;
+    }
+
+    public function isAutoRedirectOnPostEnabled(){
+        return $this->autoRedirectOnPost;
+    }
+
+    public function enableAutoRedirectOnPost($enabled=TRUE){
+        $this->autoRedirectOnPost = $enabled;
+        return $this;
+    }
+
+    public function disableAutoRedirectOnPost($disabled=TRUE){
+        return $this->enableAutoRedirectOnPost(!$disabled);
     }
 
     protected function updateAttributes(Attributes $attributes){
@@ -80,18 +107,9 @@ class Form extends FormItem implements ArrayAccess{
 
     public function getValidatorAdapter(){
         if(!$this->validatorAdapter){
-            $this->validatorAdapter = $this->createValidatorAdapter($this->getValidator());
+            $this->validatorAdapter = $this->adapterFactory->createValidatorAdapter($this, $this->getValidator());
         }
         return $this->validatorAdapter;
-    }
-
-    public function setValidatorAdapter(ValidatorAdapterInterface $adapter){
-        $this->validatorAdapter = $adapter;
-        return $this;
-    }
-
-    protected function createValidatorAdapter($validator){
-        return $this->getValidator();
     }
 
     public function getValidator(){
@@ -107,6 +125,7 @@ class Form extends FormItem implements ArrayAccess{
 
     public function setValidator($validator){
         $this->validator = $validator;
+        $this->getValidatorAdapter()->setValidator($this->validator);
         return $this;
     }
 
@@ -197,12 +216,7 @@ class Form extends FormItem implements ArrayAccess{
 
     public function getAction(){
         if(!$this->action){
-            if(isset($_SERVER) && isset($_SERVER['PATH_INFO'])){
-                $this->setAction($_SERVER['PATH_INFO']);
-            }
-            else{
-                $this->setAction('./');
-            }
+            $this->setAction(strtok($_SERVER["REQUEST_URI"],'?'));
         }
         return $this->action;
     }
@@ -221,14 +235,6 @@ class Form extends FormItem implements ArrayAccess{
         return $this;
     }
 
-    public function fillBy($data){
-        foreach($this->getDataFields() as $field){
-            print "\n".$field->getId();
-        }
-        $this->_needsValidation = FALSE;
-        $this->dataOrigin = self::MANUAL;
-    }
-
     public function fillByArray($data){
         foreach($this->getDataFields() as $field){
             if(isset($data[$field->getName()])){
@@ -237,10 +243,6 @@ class Form extends FormItem implements ArrayAccess{
         }
         $this->_needsValidation = FALSE;
         $this->dataOrigin = self::MANUAL;
-    }
-
-    public function fillByRequest($request){
-
     }
 
     public function fillByRequestArray($request){
@@ -322,8 +324,21 @@ class Form extends FormItem implements ArrayAccess{
      * @param string $name Name of FormItem
      * @return FormItem
      **/
-    public static function create($data=NULL){
+    public static function create(AdapterFactoryInterface $adapterFactory){
         $class = get_called_class();
-        return new $class($data);
+        return new $class($adapterFactory);
+    }
+
+    public function __toString(){
+
+        try{
+            return $this->adapterFactory->getRenderer()->renderFormItem($this);
+        }
+        // No exceptions inside __toString
+        catch(\Exception $e){
+            return $e->getMessage() . " Line:" . $e->getLine() . " File:" . $e->getFile();
+            trigger_error($e->getMessage(),E_USER_WARNING);
+        }
+        return "";
     }
 }
