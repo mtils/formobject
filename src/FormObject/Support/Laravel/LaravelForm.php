@@ -7,6 +7,7 @@ use FormObject\Field\HiddenField;
 use \App;
 use Illuminate\Validation\Validator;
 use URL;
+use \Input;
 
 class LaravelForm extends Form{
 
@@ -28,8 +29,14 @@ class LaravelForm extends Form{
         }
     }
 
-    protected function createValidatorAdapter($validator){
-        return new ValidatorAdapter($this, $validator);
+    protected function doAutoFillByRequest(){
+        if($old = Input::old()){
+            $data = $old;
+        }
+        else{
+            $data = Input::all();
+        }
+        $this->fillByRequestArray($data);
     }
 
     public function setValidator($validator){
