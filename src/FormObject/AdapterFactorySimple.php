@@ -11,6 +11,8 @@ class AdapterFactorySimple implements AdapterFactoryInterface{
 
     protected $redirector;
 
+    protected $eventDispatcher;
+
     public function getRenderer(){
         return $this->renderer;
     }
@@ -33,6 +35,25 @@ class AdapterFactorySimple implements AdapterFactoryInterface{
     public function setRedirector($redirector){
         $this->redirector = $redirector;
         return $this;
+    }
+
+    public function getEventDispatcher(){
+        return $this->eventDispatcher;
+    }
+
+    public function setEventDispatcher(EventDispatcherInterface $dispatcher){
+        $this->dispatcher = $dispatcher;
+        return $this;
+    }
+
+    public function getRequestAsArray($method){
+        if($method == 'post'){
+            return $_POST;
+        }
+        elseif($method == 'get'){
+            return $_GET;
+        }
+        return $_REQUEST;
     }
 
 }

@@ -22,22 +22,22 @@ class Form extends FormItem implements ArrayAccess{
     * @brief Holds the Form Fields
     * @var FieldList
     */
-    public $fields = NULL;
+    protected $_fields = NULL;
 
     /**
     * @brief Holds the Form Actions (Submit Button, Reset Button ...)
     * @var FieldList
     */
-    public $actions = NULL;
+    public $_actions = NULL;
 
 
     protected $action = '';
 
     protected $method = self::POST;
 
-    protected $_needsValidation = FALSE;
+    protected $_needsValidation = NULL;
 
-    protected $_wasSubmitted = FALSE;
+    protected $_wasSubmitted = NULL;
 
     protected $dataOrigin;
 
@@ -63,19 +63,38 @@ class Form extends FormItem implements ArrayAccess{
     public function __construct(AdapterFactoryInterface $adapterFactory){
 
         $this->adapterFactory = $adapterFactory;
-        $this->fields = $this->createFields();
-        $this->actions = $this->createActions();
 
-        $this->getId();
-        $this->getName();
-        $this->getAction();
-        $this->getMethod();
-        $this->getEncType();
+    }
 
-        if($this->autoFillByRequest){
-            $this->doAutoFillByRequest();
+    protected function getEventSuffix(){
+        return $this->getName();
+    }
+
+    public function getFields(){
+        if(!$this->_fields){
+            $this->_fields = $this->createFields();
+            $this->appendAdditionalFields($this->_fields);
+            $eventName = 'form.fields-created.'.$this->getEventSuffix();
+            $this->getAdapter()
+                   ->getEventDispatcher()
+                     ->fire($eventName,array($this->_fields));
         }
+        return $this->_fields;
+    }
 
+    protected function appendAdditionalFields(FieldList &$fields){
+        //do nothing
+    }
+
+    public function getActions(){
+        if(!$this->_actions){
+            $this->_actions = $this->createActions();
+            $eventName = 'form.actions-created.'. $this->getEventSuffix();
+            $this->getAdapter()
+                   ->getEventDispatcher()
+                     ->fire($eventName,array($this->_actions));
+        }
+        return $this->_actions;
     }
 
     public function getAdapter(){
@@ -120,7 +139,12 @@ class Form extends FormItem implements ArrayAccess{
 
     public function getValidator(){
         if(!$this->validator){
-            $this->setValidator($this->createValidator());
+            $validator = $this->createValidator();
+            $eventName = 'form.validator-created.'. $this->getEventSuffix();
+            $this->getAdapter()
+                   ->getEventDispatcher()
+                     ->fire($eventName,array($validator));
+            $this->setValidator($validator);
         }
         return $this->validator;
     }
@@ -182,30 +206,30 @@ class Form extends FormItem implements ArrayAccess{
     }
 
     public function offsetExists($offset){
-        return $this->fields->offsetExists($offset);
+        return $this->getFields()->offsetExists($offset);
     }
 
     public function offsetGet($offset){
-        return $this->fields->offsetGet($offset);
+        return $this->getFields()->offsetGet($offset);
     }
 
     public function offsetSet($offset, $value){
-        return $this->fields->offsetSet($offset, $value);
+        return $this->getFields()->offsetSet($offset, $value);
     }
 
     public function offsetUnset($offset){
-        $this->fields->offsetUnset($offset);
+        $this->getFields()->offsetUnset($offset);
     }
 
     public function push(Field $field){
-        $this->fields->push($field);
+        $this->getFields()->push($field);
 
         $numArgs = func_num_args();
 
         if($numArgs > 1){
             $args = func_get_args();
             for($i=1;$i<$numArgs;$i++){
-                $this->fields->push($args[$i]);
+                $this->getFields()->push($args[$i]);
             }
         }
 
@@ -213,11 +237,11 @@ class Form extends FormItem implements ArrayAccess{
     }
 
     public function get($name){
-        return $this->fields->get($name);
+        return $this->getFields()->get($name);
     }
 
     public function __invoke($name){
-        return $this->fields->__invoke($name);
+        return $this->getFields()->__invoke($name);
     }
 
     public function getAction(){
@@ -241,11 +265,25 @@ class Form extends FormItem implements ArrayAccess{
         return $this;
     }
 
-    public function fillByArray($data){
+    public function fillByArray($data, $prefix=NULL){
         foreach($this->getDataFields() as $field){
-            if(isset($data[$field->getName()])){
-                $field->setValue($data[$field->getName()]);
+
+            if($prefix === FALSE || $prefix === ''){
+                if(mb_strpos('__', $field->getName())){
+                    continue;
+                }
             }
+            elseif($prefix){
+                $dataKey = str_replace("{$prefix}__",'', $field->getName());
+            }
+            else{
+                $dataKey = $field->getName();
+            }
+
+            if(isset($data[$dataKey])){
+                $field->setValue($data[$dataKey]);
+            }
+
         }
         $this->_needsValidation = FALSE;
         $this->dataOrigin = self::MANUAL;
@@ -255,10 +293,14 @@ class Form extends FormItem implements ArrayAccess{
         $this->fillByGlobals();
     }
 
-    public function fillByRequestArray($request){
+    public function fillByRequestArray($request=NULL){
+
+        if(is_null($request)){
+            $request = $this->getAdapter()->getRequestAsArray($this->getMethod());
+        }
 
         $this->_wasSubmitted = FALSE;
-        foreach($this->actions as $action){
+        foreach($this->getActions() as $action){
             if(isset($request[$action->getAction()]) && $request[$action->getAction()] == $action->getValue()){
                 $action->setSelected(TRUE);
                 $this->_wasSubmitted = TRUE;
@@ -276,6 +318,7 @@ class Form extends FormItem implements ArrayAccess{
                 }
             }
             $this->_needsValidation = TRUE;
+            $this->dataOrigin = self::REQUEST;
         }
     }
 
@@ -289,20 +332,39 @@ class Form extends FormItem implements ArrayAccess{
     }
 
     public function getDataFields(){
-        return $this->fields->getDataFields();
+        return $this->getFields()->getDataFields();
     }
 
-    public function getData(){
+    public function getData($prefix=NULL){
+
         $data = array();
+
         foreach($this->getDataFields() as $field){
+
             $fieldName = $field->getName();
-            $data[$fieldName] = $field->getValue();
+
+            if($prefix !== NULL){
+                if($prefix === FALSE || $prefix === ''){
+                    if(mb_strpos($fieldName,'__') === FALSE){
+                        $data[$fieldName] = $field->getValue();
+                    }
+                }
+                else{
+                    if(mb_strpos($fieldName,"{$prefix}__") !== FALSE){
+                        $cleaned = str_replace("{$prefix}__",'',$fieldName);
+                        $data[$cleaned] = $field->getValue();
+                    }
+                }
+            }
+            else{
+                $data[$fieldName] = $field->getValue();
+            }
         }
         return $data;
     }
 
     public function getSelectedAction(){
-        foreach($this->actions as $action){
+        foreach($this->getActions() as $action){
             if($action->isSelected()){
                 return $action;
             }
@@ -311,19 +373,25 @@ class Form extends FormItem implements ArrayAccess{
 
     public function isValid(){
         $valid = TRUE;
-        foreach($this->fields->getDataFields() as $field){
+        foreach($this->getFields()->getDataFields() as $field){
             if(!$field->isValid($field->getValue())){
                 $valid = FALSE;
             }
         }
         return $valid;
     }
-    
+
     public function needsValidation(){
+        if($this->_needsValidation === NULL){
+            $this->fillByRequestArray();
+        }
         return $this->_needsValidation;
     }
-    
+
     public function wasSubmitted(){
+        if($this->_wasSubmitted === NULL){
+            $this->fillByRequestArray();
+        }
         return $this->_wasSubmitted;
     }
 

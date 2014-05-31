@@ -21,7 +21,7 @@ class FormObjectServiceProvider extends ServiceProvider {
          */
         public function register()
         {
-                $this->app->singleton('FormObject\AdapterFactoryInterface', function($app)
+                $this->app->singleton('\FormObject\AdapterFactoryInterface', function($app)
                 {
                         $adapter = new AdapterFactoryLaravel();
                         $renderer = new \FormObject\Renderer\PhpRenderer();
@@ -31,6 +31,7 @@ class FormObjectServiceProvider extends ServiceProvider {
                             }
                         }
                         $adapter->setRenderer($renderer);
+                        $adapter->setEventDispatcher(new EventDispatcher($app['events']));
                         return $adapter;
                 });
         }

@@ -4,10 +4,11 @@ use DomainException;
 use FormObject\Form;
 use FormObject\AdapterFactoryInterface;
 use FormObject\Field\HiddenField;
-use \App;
+use App;
 use Illuminate\Validation\Validator;
 use URL;
 use \Input;
+use FormObject\FieldList;
 
 class LaravelForm extends Form{
 
@@ -19,24 +20,12 @@ class LaravelForm extends Form{
 
     protected $autoFillByRequest = TRUE;
 
-    public function __construct(AdapterFactoryInterface $adapterFactory){
-        parent::__construct($adapterFactory);
-
+    protected function appendAdditionalFields(FieldList &$fields){
         if($this->appendCsrfToken){
             $app = App::getFacadeRoot();
-            $this->fields->push(HiddenField::create('_token')
-                                             ->setValue($app['session.store']->getToken()));
+            $fields->push(HiddenField::create('_token')
+                                       ->setValue($app['session.store']->getToken()));
         }
-    }
-
-    protected function doAutoFillByRequest(){
-        if($old = Input::old()){
-            $data = $old;
-        }
-        else{
-            $data = Input::all();
-        }
-        $this->fillByRequestArray($data);
     }
 
     public function setValidator($validator){

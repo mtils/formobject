@@ -7,6 +7,8 @@ interface AdapterFactoryInterface{
 
     public function createValidatorAdapter(Form $form, $validator);
 
-    public function getRedirector();
+    public function getEventDispatcher();
+
+    public function getRequestAsArray($method);
 
 }

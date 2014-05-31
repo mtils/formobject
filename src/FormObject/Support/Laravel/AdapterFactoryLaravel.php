@@ -2,12 +2,16 @@
 
 use FormObject\AdapterFactoryInterface;
 use FormObject\Form;
+use FormObject\EventDispatcherInterface;
+use \Input;
 
 class AdapterFactoryLaravel implements AdapterFactoryInterface{
 
     protected $renderer;
 
     protected $redirector;
+
+    protected $eventDispatcher;
 
     public function getRenderer(){
         return $this->renderer;
@@ -31,6 +35,25 @@ class AdapterFactoryLaravel implements AdapterFactoryInterface{
     public function setRedirector($redirector){
         $this->redirector = $redirector;
         return $this;
+    }
+
+    public function getEventDispatcher(){
+        return $this->eventDispatcher;
+    }
+
+    public function setEventDispatcher(EventDispatcherInterface $dispatcher){
+        $this->eventDispatcher = $dispatcher;
+        return $this;
+    }
+
+    public function getRequestAsArray($method){
+        if($old = Input::old()){
+            $data = $old;
+        }
+        else{
+            $data = Input::all();
+        }
+        return $data;
     }
 
 }
