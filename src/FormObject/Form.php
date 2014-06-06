@@ -372,9 +372,11 @@ class Form extends FormItem implements ArrayAccess{
     }
 
     public function getSelectedAction(){
-        foreach($this->getActions() as $action){
-            if($action->isSelected()){
-                return $action;
+        if($this->wasSubmitted()){
+            foreach($this->getActions() as $action){
+                if($action->isSelected()){
+                    return $action;
+                }
             }
         }
     }
