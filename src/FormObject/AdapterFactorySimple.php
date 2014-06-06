@@ -38,6 +38,9 @@ class AdapterFactorySimple implements AdapterFactoryInterface{
     }
 
     public function getEventDispatcher(){
+        if(!$this->eventDispatcher){
+            $this->eventDispatcher = new EventDispatcher();
+        }
         return $this->eventDispatcher;
     }
 
