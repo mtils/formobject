@@ -189,14 +189,8 @@ class Form extends FormItem implements ArrayAccess{
 
     public function getName(){
         if(!$this->name){
-            $this->setName('form');
-            public function getName(){
-                if(!$this->name){
-                    $class = new ReflectionClass(get_called_class());
-                    return self::phpClassNameToCssClassName($class->getShortName());
-                }
-                return parent::getName();
-            }
+            $class = new ReflectionClass(get_called_class());
+            return self::phpClassNameToCssClassName($class->getShortName());
         }
         return parent::getName();
     }
