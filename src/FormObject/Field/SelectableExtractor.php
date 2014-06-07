@@ -1,18 +1,19 @@
 <?php namespace FormObject\Field;
 
 use Collection\Map\ProxyExtractor;
+use Collection\Map\ValueProxy;
 
 class SelectableExtractor extends ProxyExtractor{
 
     protected $_field = NULL;
 
     protected function createProxy($item, $key, $value, $position){
-        $proxy = new SelectableProxy($item);
-        $proxy->_setKey($key);
-        $proxy->_setValue($value);
-        $proxy->_setPosition($position);
+        return new SelectableProxy($item);
+    }
+
+    protected function setProxyValues(ValueProxy &$proxy, $key, $value, $position){
+        parent::setProxyValues($proxy, $key, $value, $position);
         $proxy->_setField($this->_field);
-        return $proxy;
     }
 
     public function getField(){

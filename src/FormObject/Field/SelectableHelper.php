@@ -43,6 +43,11 @@ class SelectableHelper{
             throw new DomainException("No Extractor found for src ".\gettype($src));
         }
         $extractor = new SelectableExtractor($srcExtractor);
+
+        if($field->getColumns()){
+            $extractor->setColumns($field->getColumns());
+        }
+
         $extractor->_setField($field);
         return new CastableIterator($iteratorSrc, $extractor);
         // if rest $extractor needed (id,title?)

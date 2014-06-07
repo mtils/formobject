@@ -18,10 +18,21 @@ class BooleanRadioField extends BooleanField implements Selectable{
 
     public $order = self::TRUE_FALSE;
 
+    protected $columns;
+
     public function __construct($name=NULL, $title=NULL){
         parent::__construct($name, $title);
 
         $this->manualExtractor = new Extractor(Extractor::KEY, Extractor::VALUE);
+    }
+
+    public function getColumns(){
+        return $this->columns;
+    }
+
+    public function setColumns($columns){
+        $this->columns = $columns;
+        return $this;
     }
 
     public function isItemSelected(SelectableProxy $item){

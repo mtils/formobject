@@ -2,6 +2,7 @@
 
 use Collection\Iterator\CastableIterator;
 use Collection\Map\Extractor;
+use Collection\ColumnList;
 use FormObject\Field;
 use FormObject\Attributes;
 use OutOfBoundsException;
@@ -12,10 +13,26 @@ class SelectManyField extends Field implements Selectable{
 
     protected $manualExtractor;
 
+    protected $columns;
+
     public function __construct($name=NULL, $title=NULL){
         parent::__construct($name, $title);
 
         $this->manualExtractor = new Extractor(Extractor::KEY, Extractor::VALUE);
+    }
+
+    public function getColumns(){
+        return $this->columns;
+    }
+
+    public function setColumns($columns){
+        if($columns instanceof ColumnList){
+            $this->columns = $columns;
+        }
+        else{
+            $this->columns = ColumnList::fromArray($columns);
+        }
+        return $this;
     }
 
     public function updateAttributes(Attributes $attributes){
