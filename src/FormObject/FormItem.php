@@ -137,6 +137,7 @@ class FormItem{
             throw new Exception("Please use the methods for id, name and class");
         }
         $this->getAttributes()->set($key,$value);
+        return $this;
     }
 
     public function getClassName(){
