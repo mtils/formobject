@@ -57,7 +57,7 @@ class SimpleValidator implements ValidatorAdapterInterface{
         if(isset($this->validationResult[$fieldName])){
             return !$this->validationResult[$fieldName];
         }
-        return TRUE;
+        return FALSE;
     }
 
     public function getMessages($fieldName){

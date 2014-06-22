@@ -1,6 +1,6 @@
 <? foreach($item as $option): ?>
     <div class="radio">
-        <label><input type="radio" name="<?=$item->name ?>" value="<?= $option->key ?>" <?= $option->selected ? ' checked="checked"' : '' ?>/> <?= $option ?></label>
+        <label class="control-label"><input type="radio" name="<?=$item->name ?>" value="<?= $option->key ?>" <?= $option->selected ? ' checked="checked"' : '' ?>/> <?= $option ?></label>
     </div>
 <? endforeach ?>
 <? if(!$item->isValid()): ?>

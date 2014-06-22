@@ -1,10 +1,13 @@
     <div class="form-group<? if(!$item->isValid()) echo ' has-error'; ?>">
-        <label for="<?=$item->id ?>"><?=$item->title ?></label>
+        <label class="control-label" for="<?=$item->id ?>"><?=$item->title ?></label>
         <? if($item->className == 'MultiCheckboxField' || $item->getColumns()): ?>
             <? if($item->className == 'MultiCheckboxField'): ?>
             <br/>
                 <? foreach($item as $option): ?>
-                    <label class="checkbox-inline"><input name="<?= $item->name ?>[]" type="checkbox" value="<?= $option->key ?>"<?= $option->selected ? ' checked="checked"' : '' ?>><?= $option ?></label>
+                    <label class="checkbox-inline checkbox-set"><input name="<?= $item->name ?>[]" type="checkbox" value="<?= $option->key ?>"<?= $option->selected ? ' checked="checked"' : '' ?>>
+                        <?= $option ?>
+                    </label>
+                    <br/>
                 <? endforeach ?>
             <? elseif($columns = $item->getColumns()): ?>
             <table class="table table-bordered">

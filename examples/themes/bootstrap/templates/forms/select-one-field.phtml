@@ -1,5 +1,5 @@
     <div class="form-group<? if(!$item->isValid()) echo ' has-error'; ?>">
-        <label for="<?=$item->id ?>"><?=$item->title ?></label>
+        <label class="control-label" for="<?=$item->id ?>"><?=$item->title ?></label>
         <? if($item->className == 'SelectOneField'): ?>
             <select <?=$item->addCssClass('form-control')->attributes?>>
             <? foreach($item as $option): ?>

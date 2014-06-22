@@ -1,5 +1,5 @@
 <div class="checkbox">
-<label><input <?= $item->attributes ?>/> <?= $item->title ?></label>
+<label class="control-label"><input <?= $item->attributes ?>/> <?= $item->title ?></label>
 <? if(!$item->isValid()): ?>
 <? foreach($item->messages as $error): ?>
 <span class="help-inline"><?= $error ?></span>

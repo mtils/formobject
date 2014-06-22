@@ -1,7 +1,7 @@
 <? if($item->switchable): ?>
     <div class="form-group<? if(!$item->isValid()) echo ' has-error'; ?>">
 
-        <label for="<?=$item->id ?>"><?=$item->title ?></label>
+        <label class="control-label" for="<?=$item->id ?>"><?=$item->title ?></label>
 
         <?php $containerId = $item->id . '-container' ?>
 
