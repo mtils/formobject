@@ -1,0 +1,39 @@
+<? if($item->switchable): ?>
+    <div class="form-group<? if(!$item->isValid()) echo ' has-error'; ?>">
+
+        <label for="<?=$item->id ?>"><?=$item->title ?></label>
+
+        <?php $containerId = $item->id . '-container' ?>
+
+        <div class="<?= $item->addCssClass('panel-group')->cssClasses ?>" id="<?= $containerId ?>">
+            <input type="hidden" name="<?= $item->name ?>" id="<?= $item->id ?>" value="<?= $item->value ?>" />
+
+            <? foreach($item as $option): ?>
+
+            <?php $optionId = $item->id . '-' . $option->key ?>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" onclick="jQuery('#<?= $item->id ?>').val('<?= $option->key ?>');" data-parent="#<?= $containerId ?>" href="#<?= $optionId ?>">
+                        <?= $option ?>
+                        </a>
+                    </h4>
+                </div>
+                <div id="<?= $optionId ?>" class="panel-collapse collapse<?= $option->selected ? ' in' : '' ?>">
+                    <div class="panel-body"><?= $item->getGroup($option->key) ?></div>
+                </div>
+            </div>
+            <? endforeach ?>
+
+        </div>
+    </div>
+<? else: ?>
+    <fieldset>
+    <? if($item->hasTitle()): ?>
+    <legend><?= $item->title ?></legend>
+    <? endif ?>
+    <? foreach($item as $field): ?>
+    <?= $field ?>
+    <? endforeach ?>
+    </fieldset>
+<? endif ?>

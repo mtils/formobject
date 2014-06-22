@@ -15,6 +15,7 @@ use FormObject\Field;
 use FormObject\FieldList;
 use FormObject\Field\TextField;
 use FormObject\Field\Action;
+use FormObject\Field\SelectOneGroup;
 use FormObject\Field\CheckboxField;
 use FormObject\Field\BooleanRadioField;
 use FormObject\Field\SelectOneField;
@@ -56,38 +57,32 @@ $form->push($container);
 
 $container->push($name)->push($surname)->push($rememberMe)->push($rememberMyRadio);
 
-$category = new SelectOneField('category','User Category');
-
-$categories = array(
-    1 => 'Customer',
-    2 => 'Co-Worker',
-    3 => 'Family',
-    4 => 'Organisation',
-    5 => 'Prospect'
-);
-
-$tags = array(
-    1 => 'New',
-    2 => 'Partner',
-    3 => 'Important',
-    4 => 'Reused'
-);
-
-$category->setSrc($categories)->setValue(2);
-
-$tagsField = SelectManyField::create('tags')->setTitle('Tags')->setSrc($tags);
-
-$category2 = SelectOneField::create('category2','User Category 2');
-$category2->setSrc($categories)->setClassName('RadioButtonsField');
-
-$tags2 = SelectManyField::create('tags2')->setTitle('Tags 2')->setSrc($tags);
-$tags2->setClassName('MultiCheckboxField');
-
 $container2 = new FieldList('group2', 'Tab Two');
 $container2->setSwitchable(TRUE);
-$container2->push($category)->push($tagsField)->push($category2)->push($tags2);
+// $container2->push($category)->push($tagsField)->push($category2)->push($tags2);
+
+$linkTypes = array('internal'=>'Internal','external'=>'External');
+
+$selectGroup = SelectOneGroup::create('linkType', 'Link')->setSrc($linkTypes);
+$selectGroup->setValue('internal');
+
+$targets = array(
+    'firstchild' => 'First Child Page',
+    '1' => 'Home',
+    '2' => 'Contact',
+    '3' => 'About us'
+);
+
+$pages = SelectOneField::create('internalTarget','Target')->setSrc($targets);
+
+$selectGroup->push($pages);
 
 
+$externalTarget = TextField::create('externalTarget','URL');
+
+$selectGroup->push($externalTarget);
+
+$container2->push($selectGroup);
 
 $form->push($container2);
 
@@ -111,8 +106,10 @@ $trueValidator->mustBeTrue = TRUE;
 $validator = new SimpleValidator($form);
 $validator->set('name', $nameValidator);
 $validator->set('surname', $requiredValidator);
+$validator->set('linkType', $requiredValidator);
 $validator->set('rememberMyRadio', $trueValidator);
-$validator->set('category', $requiredValidator);
+$validator->set('internalTarget', $requiredValidator);
+$validator->set('externalTarget', $nameValidator);
 
 $form->setValidator($validator);
 
