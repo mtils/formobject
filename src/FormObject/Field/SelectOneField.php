@@ -11,6 +11,8 @@ class SelectOneField extends Field implements Selectable{
 
     protected $manualExtractor;
 
+    protected $grouper;
+
     protected $columns;
 
     public function __construct($name=NULL, $title=NULL){
@@ -26,6 +28,24 @@ class SelectOneField extends Field implements Selectable{
     public function setColumns($columns){
         $this->columns = $columns;
         return $this->columns;
+    }
+
+    public function getGrouper(){
+        return $this->grouper;
+    }
+
+    public function setGrouper($grouper){
+        $this->grouper = $grouper;
+        $this->grouper->setSelectField($this);
+        return $this;
+    }
+
+    public function hasGroups(){
+        return ($this->grouper instanceof OptionGrouper);
+    }
+
+    public function getGrouped(){
+        return $this->grouper->getGrouped();
     }
 
     public function updateAttributes(Attributes $attributes){

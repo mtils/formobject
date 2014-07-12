@@ -2,9 +2,19 @@
         <label class="control-label" for="<?=$item->id ?>"><?=$item->title ?></label>
         <? if($item->className == 'SelectOneField'): ?>
             <select <?=$item->addCssClass('form-control')->attributes?>>
+            <? if($item->hasGroups()): ?>
+            <? foreach($item->getGrouped() as $group=>$options): ?>
+                <optgroup label="<?= $group ?>">
+                <? foreach($options as $option): ?>
+                    <option value="<?= $option->key ?>"<?= $option->selected ? ' selected="selected"' : '' ?>><?= $option ?></option>
+                <? endforeach ?>
+                </optgroup>
+            <? endforeach ?>
+            <? else: ?>
             <? foreach($item as $option): ?>
             <option value="<?= $option->key ?>"<?= $option->selected ? ' selected="selected"' : '' ?>><?= $option ?></option>
             <? endforeach ?>
+            <? endif ?>
             </select>
         <? elseif($item->className == 'RadioButtonsField'): ?>
             <? foreach($item as $option): ?>
