@@ -94,4 +94,13 @@ class SelectManyField extends Field implements Selectable{
         return TRUE;
     }
 
+    public function copy(){
+        $copy = parent::copy();
+        if($this->columns){
+            $copy->setColumns($this->columns);
+        }
+        $copy->setSrc($this->getSrc(), $this->manualExtractor);
+        return $copy;
+    }
+
 }

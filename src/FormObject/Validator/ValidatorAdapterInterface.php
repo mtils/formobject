@@ -6,6 +6,8 @@ interface ValidatorAdapterInterface{
 
     public function setValidator($validator);
 
+    public function validate($data);
+
     /**
      * @brief Returns if the value of this field is valid
      * @param string $fieldName

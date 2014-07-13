@@ -1,6 +1,4 @@
-<?php
-
-namespace FormObject\Field;
+<?php namespace FormObject\Field;
 
 use FormObject\Attributes;
 

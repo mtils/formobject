@@ -13,6 +13,10 @@ class SimpleAdapter implements ValidatorAdapterInterface{
         return $this;
     }
 
+    public function validate($data){
+        return $this->validator->validate($data);
+    }
+
     /**
      * @brief Returns if the value of this field is valid
      * @param string $fieldName

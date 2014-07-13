@@ -29,4 +29,10 @@ class TextField extends Field{
         $this->multiLine = $multiLine;
         return $this;
     }
+
+    public function copy(){
+        $copy = parent::copy();
+        $copy->setMultiLine($this->isMultiLine());
+        return $copy;
+    }
 }

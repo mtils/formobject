@@ -138,6 +138,11 @@ class Form extends FormItem implements ArrayAccess{
         return $this->validatorAdapter;
     }
 
+    public function setValidatorAdapter(ValidatorAdapterInterface $adapter){
+        $this->validatorAdapter = $adapter;
+        return $this;
+    }
+
     public function getValidator(){
         if(!$this->validator){
             $validator = $this->createValidator();
@@ -421,5 +426,12 @@ class Form extends FormItem implements ArrayAccess{
             trigger_error($e->getMessage(),E_USER_WARNING);
         }
         return "";
+    }
+
+    public function copy(){
+        $copy = static::create($this->adapterFactory);
+        $copy->setName($this->getName())
+             ->setEncType($this->getEncType());
+        return $copy;
     }
 }

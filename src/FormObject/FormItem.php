@@ -101,7 +101,9 @@ class FormItem{
             foreach($classNames as $className){
                 $this->cssClasses->append(self::phpClassNameToCssClassName($className));
             }
-            $this->cssClasses->append($this->getName());
+            $search = array('[',']');
+            $replace = array('-','-');
+            $this->cssClasses->append(str_replace($search, $replace,$this->getName()));
         }
     }
 
@@ -114,6 +116,10 @@ class FormItem{
         $this->initCssClasses();
         $this->cssClasses->append($class);
         return $this;
+    }
+
+    public function hasCssClass($class){
+        return $this->getCssClasses()->contains($class);
     }
 
     public function getAttributes(){

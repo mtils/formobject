@@ -3,13 +3,15 @@
     <? else: ?>
     <div class="form-group<? if(!$item->isValid()) echo ' has-error'; ?>">
     <? $item->addCssClass('form-control') ?>
-        <label class="control-label" for="<?= $item->id ?>"><?= $item->title ?></label>
+        <? if(!$item->hasCssClass('no-label')): ?>
+            <label class="control-label" for="<?= $item->id ?>"><?= $item->title ?></label>
+        <? endif ?>
         <? if($item->className == 'TextField' && $item->multiLine): ?>
             <textarea <?= $item->attributes->without('value') ?>><?= $item->value ?></textarea>
         <? else: ?>
             <input <?= $item->attributes ?>/>
         <? endif ?>
-        <? if(!$item->isValid()): ?>
+        <? if(!$item->isValid()): ?><!-- invalid -->
             <? foreach($item->messages as $error): ?>
             <span class="help-inline"><?= $error ?></span>
             <? endforeach ?>

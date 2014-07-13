@@ -16,7 +16,7 @@ class LaravelForm extends Form{
 
     protected $sessionTokenName = '_token';
 
-    protected $appendCsrfToken = TRUE;
+    protected $appendCsrfToken = FALSE;
 
     protected $autoFillByRequest = TRUE;
 
@@ -31,7 +31,7 @@ class LaravelForm extends Form{
     public function setValidator($validator){
 
         if(!$validator instanceof Validator){
-            throw new DomainException('LaravelForm Validators have to be Illuminate\Validation\Validator');
+            throw new DomainException('LaravelForm Validators have to be Illuminate\Validation\Validator not '.get_class($validator));
         }
         $validator->setAttributeNames($this->buildAttributeNames());
 

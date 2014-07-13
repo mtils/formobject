@@ -14,6 +14,7 @@ class Validator implements ValidatorInterface{
     public function isValid($value){
         return TRUE;
     }
+
     public function addMessage($msgKey){
         $this->messages[] = static::parseMessage($msgKey);
     }

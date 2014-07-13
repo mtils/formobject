@@ -92,4 +92,17 @@ class SelectOneField extends Field implements Selectable{
         return FALSE;
     }
 
+    public function copy(){
+        $copy = parent::copy();
+        if($this->columns){
+            $copy->setColumns($this->columns);
+        }
+        if($this->grouper){
+            $copy->setGrouper($this->grouper);
+        }
+        $copy->setSrc($this->src, $this->manualExtractor);
+
+        return $copy;
+    }
+
 }

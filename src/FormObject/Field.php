@@ -53,7 +53,11 @@ class Field extends FormItem{
 
     public function getId(){
         if(!$this->id){
-            $this->setId($this->form->getId() . '__' . $this->getName());
+            $search = array('[',']');
+            $replace = array('.',':');
+            $this->setId($this->form->getId() . '__' . 
+                        str_replace($search,$replace,$this->getName())
+            );
         }
         return parent::getId();
     }
@@ -158,4 +162,15 @@ class Field extends FormItem{
         }
         return "";
     }
+
+    public function copy(){
+        $copy = static::create($this->name, $this->title);
+        if($this->hasTitle()){
+            $copy->setTitle($this->title);
+        }
+        $copy->setTooltip($this->tooltip);
+        $copy->setDescription($this->description);
+        return $copy;
+    }
+
 }

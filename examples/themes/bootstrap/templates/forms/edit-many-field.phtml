@@ -1,0 +1,51 @@
+    <div class="form-group<? if(!$item->isValid()) echo ' has-error'; ?>">
+        <label class="control-label" for="<?=$item->id ?>"><?=$item->title ?></label>
+        <?php
+            $draggable = $item->hasCssClass('draggable');
+            $addable = $item->hasCssClass('addable');
+            $removable = $item->hasCssClass('removable');
+        ?>
+        <table class="table table-bordered inline-edit">
+            <thead>
+                <tr>
+                <? foreach($item->fields as $column): ?>
+                    <th><?= $column->title ?></th>
+                <? endforeach ?>
+                <? if($removable): ?>
+                    <th></th>
+                <? endif ?>
+                </tr>
+            </thead>
+            <? if($addable): ?>
+                <tfoot>
+                    <tr>
+                        <td colspan="100"><a href="#" class="row-add">Add...</a></td>
+                    </tr>
+                </tfoot>
+            <? endif ?>
+            <tbody>
+            <? foreach($item as $form): ?>
+                <tr class="itemrow">
+                <? foreach($form->fields as $field): ?>
+                    <? $field->addCssClass('no-label') ?>
+                    <? if($field->className == 'HiddenField'): ?>
+                    <td><?= $field->value ?><?= $field ?></td>
+                    <? else: ?>
+                    <td><?= $field ?></td>
+                    <? endif ?>
+                <? endforeach ?>
+                <? if($removable): ?>
+                    <td><a href="#" class="row-remove">Delete</a></td>
+                <? endif ?>
+                </tr>
+            <? endforeach ?>
+            </tbody>
+        </table>
+        <? if(!$item->isValid()): ?>
+        <? foreach($item->messages as $error): ?>
+        <span class="help-inline"><?= $error ?></span>
+        <? endforeach ?>
+        <? elseif($item->description): ?>
+        <span class="help-inline"><?= $item-description ?></span>
+        <? endif ?>
+    </div>

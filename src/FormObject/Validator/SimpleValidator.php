@@ -28,15 +28,22 @@ class SimpleValidator implements ValidatorAdapterInterface{
         $this->validators[$fieldName] = $validator;
     }
 
-    public function validate(){
+    public function validate($data){
         $result = TRUE;
-        foreach($this->validators as $fieldName=>$validator){
-            if(!$validator->isValid($this->form[$fieldName])){
-                $result = $this->validationResult[$fieldName] = FALSE;
+//         print_r($data);
+        foreach($data as $fieldName=>$value){
+            if(isset($this->validators[$fieldName])){
+//                 echo "\nChecking $value of $fieldName";
+                if(!$this->validators[$fieldName]->isValid($value)){
+                    $result = $this->validationResult[$fieldName] = FALSE;
+                }
+                else{
+                    $this->validationResult[$fieldName] = TRUE;
+                }
             }
-            else{
-                $this->validationResult[$fieldName] = TRUE;
-            }
+//             else{
+//                 echo "\nNo validator for $fieldName";
+//             }
         }
         $this->validated = TRUE;
         return $result;
@@ -52,7 +59,7 @@ class SimpleValidator implements ValidatorAdapterInterface{
 
     public function hasErrors($fieldName){
         if(!$this->validated){
-            $this->validate();
+            $this->validate($this->form->data);
         }
         if(isset($this->validationResult[$fieldName])){
             return !$this->validationResult[$fieldName];
@@ -62,7 +69,7 @@ class SimpleValidator implements ValidatorAdapterInterface{
 
     public function getMessages($fieldName){
         if(!$this->validated){
-            $this->validate();
+            $this->validate($this->form->data);
         }
         if(isset($this->validators[$fieldName])){
             return $this->validators[$fieldName]->getMessages();
