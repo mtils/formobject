@@ -4,6 +4,7 @@ use FormObject\AdapterFactoryInterface;
 use FormObject\Form;
 use FormObject\EventDispatcherInterface;
 use \Input;
+use URL;
 
 class AdapterFactoryLaravel implements AdapterFactoryInterface{
 
@@ -12,6 +13,10 @@ class AdapterFactoryLaravel implements AdapterFactoryInterface{
     protected $redirector;
 
     protected $eventDispatcher;
+
+    public function getDefaultAction(Form $form){
+        return URL::current();
+    }
 
     public function getRenderer(){
         return $this->renderer;

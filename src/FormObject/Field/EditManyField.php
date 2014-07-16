@@ -30,13 +30,7 @@ class EditManyField extends Field implements Iterator, ArrayAccess{
 
     protected $itemForms;
 
-//     public function __construct($name=NULL, $title=NULL){
-//         parent::__construct($name, $title);
-// 
-//         $this->manualExtractor = new Extractor(Extractor::KEY, Extractor::VALUE);
-//     }
-
-    public function getItemForm(){
+   public function getItemForm(){
         return $this->itemForm;
     }
 
@@ -47,6 +41,25 @@ class EditManyField extends Field implements Iterator, ArrayAccess{
 
     public function getFields(){
         return $this->itemForm->fields;
+    }
+
+    public function isValid(){
+        if(!$this->form->needsValidation()){
+            return TRUE;
+        }
+
+        if($this->valid === NULL){
+            $valid = TRUE;
+            foreach($this as $itemForm){
+                if(!$itemForm->isValid()){
+                    $valid = FALSE;
+                    break;
+                }
+            }
+            $this->valid = $valid;
+        }
+
+        return $this->valid;
     }
 
     public function getColumns(){
@@ -116,7 +129,11 @@ class EditManyField extends Field implements Iterator, ArrayAccess{
             throw new DomainException("Assign a itemForm via setItemForm before using EditManyField");
         }
 
+        $this->itemForm->forceValidation();
+
         $itemForm = $this->itemForm->copy();
+
+        $itemForm->setName($this->getName()."_{$idx}");
 
         $srcAdapter = $this->itemForm->getValidatorAdapter();
 
@@ -155,8 +172,9 @@ class EditManyField extends Field implements Iterator, ArrayAccess{
             if($form->wasSubmitted()){
 
                 // Fake a Form submit
-                foreach($this->itemForm->actions as $action){
+                foreach($itemForm->actions as $action){
                     $values[$action->getAction()] = $action->getValue();
+                    break;
                 }
                 $itemForm->fillByRequestArray($values);
             }

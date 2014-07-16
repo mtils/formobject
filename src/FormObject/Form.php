@@ -206,7 +206,7 @@ class Form extends FormItem implements ArrayAccess{
         }
         return $this->encType;
     }
-    
+
     public function setEncType($encType){
         $this->encType = $encType;
         return $this;
@@ -253,7 +253,7 @@ class Form extends FormItem implements ArrayAccess{
 
     public function getAction(){
         if(!$this->action){
-            $this->setAction(strtok($_SERVER["REQUEST_URI"],'?'));
+            $this->setAction($this->adapterFactory->getDefaultAction($this));
         }
         return $this->action;
     }
@@ -395,6 +395,11 @@ class Form extends FormItem implements ArrayAccess{
             $this->fillByRequestArray();
         }
         return $this->_needsValidation;
+    }
+
+    public function forceValidation(){
+        $this->_needsValidation = TRUE;
+        return $this;
     }
 
     public function wasSubmitted(){

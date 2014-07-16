@@ -3,6 +3,8 @@
 
 interface AdapterFactoryInterface{
 
+    public function getDefaultAction(Form $form);
+
     public function getRenderer();
 
     public function createValidatorAdapter(Form $form, $validator);

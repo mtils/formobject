@@ -11,6 +11,8 @@ class ProxyValidatorAdapter implements ValidatorAdapterInterface, ArrayAccess{
 
     protected $fieldMapReversed = array();
 
+    protected $messagesCache = array();
+
     protected $validated = FALSE;
 
     protected $form;
@@ -55,8 +57,15 @@ class ProxyValidatorAdapter implements ValidatorAdapterInterface, ArrayAccess{
             }
             $mappedData[$mappedName] = $value;
         }
-
         $res = $this->srcAdapter->validate($mappedData);
+//         echo "\n";
+//         print_r($mappedData);
+        echo "\nRESULT:"; var_dump($res);
+        foreach($mappedData as $fieldName=>$value){
+            $this->messagesCache[$fieldName] = $this->srcAdapter->getMessages($fieldName);
+        }
+//         print_r($this->srcAdapter->getValidator()->getRules());
+//         print_r($this->messagesCache);
         $this->validated = TRUE;
         return $res;
     }

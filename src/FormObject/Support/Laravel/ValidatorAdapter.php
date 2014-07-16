@@ -2,6 +2,8 @@
 
 use FormObject\Validator\ValidatorAdapterInterface;
 use FormObject\Form;
+use DomainException;
+use Illuminate\Validation\Validator;
 
 class ValidatorAdapter implements ValidatorAdapterInterface{
 
@@ -28,13 +30,21 @@ class ValidatorAdapter implements ValidatorAdapterInterface{
     }
 
     public function setValidator($validator){
+
+        if(!$validator instanceof Validator){
+            throw new DomainException('LaravelForm Validators have to be Illuminate\Validation\Validator not '.get_class($validator));
+        }
+
+        $validator->setAttributeNames($this->buildAttributeNames($this->form));
         $this->validator = $validator;
+
         return $this;
     }
 
     public function hasErrors($fieldName){
 
         if(!$this->form->needsValidation()){
+            echo "\n{$this->form->name} HAS NO ERRORS DONT NEED VALIDATION";
             return FALSE;
         }
 
@@ -50,6 +60,7 @@ class ValidatorAdapter implements ValidatorAdapterInterface{
 
     public function getMessages($fieldName){
         if(!$this->form->needsValidation()){
+            echo "\n{$this->form->name} HAS NO MESSAGES DONT NEED VALIDATION";
             return array();
         }
         else{
@@ -80,6 +91,14 @@ class ValidatorAdapter implements ValidatorAdapterInterface{
 
     protected function ruleToName($rule){
         return preg_replace('/[^a-zA-Z0-9]+/u', '-', $rule);
+    }
+
+    protected function buildAttributeNames($form){
+        $attributeNames = array();
+        foreach($form->getDataFields() as $field){
+            $attributeNames[$field->getName()] = $field->getTitle();
+        }
+        return $attributeNames;
     }
 
 } 

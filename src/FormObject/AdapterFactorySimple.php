@@ -13,6 +13,10 @@ class AdapterFactorySimple implements AdapterFactoryInterface{
 
     protected $eventDispatcher;
 
+    public function getDefaultAction(Form $form){
+        return strtok($_SERVER["REQUEST_URI"],'?');
+    }
+
     public function getRenderer(){
         return $this->renderer;
     }
