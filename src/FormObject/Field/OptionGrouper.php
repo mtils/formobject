@@ -73,7 +73,7 @@ class OptionGrouper implements IteratorAggregate{
         $getter = $this->groupGetter;
 
         foreach($this->selectField as $option){
-            $group = $getter($this, $option->getSrc());
+            $group = $getter($this, $option);
             $title = $this->getTitle($group);
             if(!isset($groupedArray[$title])){
                 $groupedArray[$title] = array();

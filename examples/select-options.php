@@ -50,7 +50,7 @@ $category2 = SelectOneField::create('category2','User Category 2');
 $category2->setSrc($categories)->setClassName('RadioButtonsField');
 
 $grouper = new OptionGrouper(function($grouper, $item){
-    if(in_array($item, array('Customer','Organisation','Organisation'))){
+    if(in_array("$item", array('Customer','Organisation','Organisation'))){
         return 'Business';
     }
     return 'Personal';
@@ -58,7 +58,7 @@ $grouper = new OptionGrouper(function($grouper, $item){
 });
 
 $grouper2 = new OptionGrouper(function($grouper, $item){
-    if(in_array($item, array('Customer','Organisation','Organisation'))){
+    if(in_array("$item", array('Customer','Organisation','Organisation'))){
         return 'Business';
     }
     return 'Personal';
