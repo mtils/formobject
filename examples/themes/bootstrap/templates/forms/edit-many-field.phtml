@@ -35,7 +35,7 @@
                     <? endif ?>
                 <? endforeach ?>
                 <? if($removable): ?>
-                    <td><a href="#" class="row-remove">Delete</a></td>
+                    <td><a href="#" class="row-remove">Remove</a></td>
                 <? endif ?>
                 </tr>
             <? endforeach ?>
@@ -46,6 +46,6 @@
         <span class="help-inline"><?= $error ?></span>
         <? endforeach ?>
         <? elseif($item->description): ?>
-        <span class="help-inline"><?= $item-description ?></span>
+        <span class="help-inline"><?= $item->description ?></span>
         <? endif ?>
     </div>
