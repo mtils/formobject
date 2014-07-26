@@ -272,26 +272,53 @@ class Form extends FormItem implements ArrayAccess{
         return $this;
     }
 
+    /**
+     * @brief Fill the form by an array or ArrayInterface. You can prefix
+     *        Fields to isolate some fields for another object and prefix
+     *        all of them with $prefix .'__'.
+     *        If you do that you can pass an array without that prefix in its keys
+     *        and separatly pass the prefix as a second parameter.
+     *
+     *        You have three options:
+     *
+     * @example FormObject\Form::fillArray($data):
+     *        Will fill the form with all data in $data
+     * @example FormObject\Form::fillArray($data,'')
+     * @example FormObject\Form::fillArray($data, FALSE)
+     *        Will fill the form with all data in $data
+     *        if the particular FIELDname does not contain "__"
+     * @example FormObject\Form::fillArray($data, 'prefix')
+     *        Will fill the form by all data in $data but only
+     *        concern fields with the prefix "$prefix__"
+     *
+     * @param \ArrayInterface $data
+     * @param mixed $prefix NULL:regard all fields FALSE|'': Regard unprefixed,
+     *                      non-empty string: only with prefix $prefix
+     * @return void
+     **/
     public function fillByArray($data, $prefix=NULL){
 
         foreach($this->getDataFields() as $field){
 
-            // If no prefix is passed, skip all fields with
+            // If its explicit passed that no prefixes
+            // should be concerned, skip all fields without
             // a prefix
             if($prefix === FALSE || $prefix === ''){
-                if(mb_strpos('__', $field->getName())){
+                if(mb_strpos($field->getName(), '__')){
                     continue;
                 }
             }
             elseif($prefix){
 
+                $nameStart = "{$prefix}__";
+
                 // If a prefix is passed, skip all fields without
                 // a prefix
-                if(!mb_strpos('__', $field->getName())){
+                if(mb_strpos($field->getName(), $nameStart) !== 0){
                     continue;
                 }
 
-                $dataKey = str_replace("{$prefix}__",'', $field->getName());
+                $dataKey = str_replace($nameStart, '', $field->getName());
             }
             else{
                 $dataKey = $field->getName();
