@@ -273,14 +273,24 @@ class Form extends FormItem implements ArrayAccess{
     }
 
     public function fillByArray($data, $prefix=NULL){
+
         foreach($this->getDataFields() as $field){
 
+            // If no prefix is passed, skip all fields with
+            // a prefix
             if($prefix === FALSE || $prefix === ''){
                 if(mb_strpos('__', $field->getName())){
                     continue;
                 }
             }
             elseif($prefix){
+
+                // If a prefix is passed, skip all fields without
+                // a prefix
+                if(!mb_strpos('__', $field->getName())){
+                    continue;
+                }
+
                 $dataKey = str_replace("{$prefix}__",'', $field->getName());
             }
             else{
