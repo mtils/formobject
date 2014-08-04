@@ -73,6 +73,7 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
     public function offsetSet($offset, $value){
 
         $this->keyOrder[] = $offset;
+
         $this->fields[$offset] = $value;
 
         if($value->holdsData()){
@@ -106,8 +107,9 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
     * @return FieldList
     */
     public function push(Field $field){
+
         $this->offsetSet($field->getName(), $field);
-        
+
         $numArgs = func_num_args();
 
         if($numArgs > 1){
@@ -193,6 +195,40 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
         if($this->parent instanceof self){
             $this->parent->_removeDataField($field);
         }
+    }
+
+    public function before($fieldName, $ohNoIMeantAfter=FALSE){
+
+        $lastAddedKey = array_pop($this->keyOrder);
+
+        $newKeyOrder = array();
+
+        foreach($this->keyOrder as $key){
+            if($key == $fieldName){
+                if(!$ohNoIMeantAfter){
+                    $newKeyOrder[] = $lastAddedKey;
+                    $newKeyOrder[] = $key;
+                }
+                else{
+                    $newKeyOrder[] = $key;
+                    $newKeyOrder[] = $lastAddedKey;
+                }
+            }
+            else{
+                $newKeyOrder[] = $key;
+            }
+        }
+
+        $this->keyOrder = $newKeyOrder;
+
+        return $this;
+
+    }
+
+    public function after($fieldName){
+
+        return $this->before($fieldName, TRUE);
+
     }
 
     public function isFirstField(Field $field){
