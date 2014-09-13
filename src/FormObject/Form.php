@@ -381,6 +381,8 @@ class Form extends FormItem implements ArrayAccess{
 
     public function getData($prefix=NULL){
 
+        $this->wasSubmitted();
+
         $data = array();
 
         foreach($this->getDataFields() as $field){
