@@ -155,8 +155,45 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
         throw new OutOfBoundsException("Datafield '$name' not found");
     }
 
-    public function getDataFields(){
-        return $this->dataFields;
+    public function getDataFields($prefix=NULL){
+
+        if($prefix === NULL){
+            return $this->dataFields;
+        }
+
+        $prefixed = [];
+
+        foreach($this->dataFields as $field){
+            if($field->getPrefix() == $prefix){
+                $prefixed[] = $field;
+            }
+        }
+
+        return $prefixed;
+
+    }
+
+    public function getDataFieldNames($prefix=NULL){
+        $names = [];
+        foreach($this->getDataFields($prefix) as $field){
+            $names[] = $field->getPlainName();
+        }
+        return $names;
+    }
+
+    public function getPrefixes(){
+
+        $prefixes = [];
+
+        foreach($this->dataFields as $field){
+            $prefix = $field->getPrefix();
+            if(!in_array($prefix, $prefixes)){
+                $prefixes[] = $prefix;
+            }
+        }
+
+        return $prefixes;
+
     }
 
     public function getParent(){

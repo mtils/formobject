@@ -173,4 +173,36 @@ class Field extends FormItem{
         return $copy;
     }
 
+    public function getPrefix(){
+
+        list($prefix, $name) = $this->getPrefixAndName();
+
+        return $prefix;
+
+    }
+
+    public function getPlainName(){
+
+        list($prefix, $name) = $this->getPrefixAndName();
+
+        return $name;
+
+    }
+
+    public function getPrefixAndName(){
+
+        $tiled = explode('__', $this->getName());
+
+        if(isset($tiled[1])){
+            $prefix = $tiled[0];
+            $name = $tiled[1];
+        }
+        else{
+            $prefix = '';
+            $name = $tiled[0];
+        }
+        return [$prefix, $name];
+
+    }
+
 }

@@ -251,6 +251,10 @@ class Form extends FormItem implements ArrayAccess{
         return $this->getFields()->__invoke($name);
     }
 
+    public function __call($method, $params){
+        return call_user_func_array([$this->getFields(), $method], $params);
+    }
+
     public function getAction(){
         if(!$this->action){
             $this->setAction($this->adapterFactory->getDefaultAction($this));
@@ -375,8 +379,8 @@ class Form extends FormItem implements ArrayAccess{
         }
     }
 
-    public function getDataFields(){
-        return $this->getFields()->getDataFields();
+    public function getDataFields($prefix=NULL){
+        return $this->getFields()->getDataFields($prefix);
     }
 
     public function getData($prefix=NULL){
