@@ -249,6 +249,7 @@ class Form extends FormItem implements ArrayAccess{
     }
 
     public function offsetGet($offset){
+        $this->performAutoValidation();
         return $this->getFields()->offsetGet($offset);
     }
 
@@ -421,21 +422,30 @@ class Form extends FormItem implements ArrayAccess{
 
     public function getData($prefix=NULL){
 
-        if($this->wasSubmitted() && $this->_throwValidationErrors && !$this->_autoValidated){
+        $this->performAutoValidation();
 
-            $data = $this->collectData();
-            $validator = $this->getValidatorAdapter();
-//             print_r($data); dd($validator->validate($data));
-            if(!$validator->validate($data)){
-                $exception = $validator->createValidationException($validator->getValidator());
-                throw $exception;
+        return $this->collectData($prefix);
+
+    }
+
+    protected function performAutoValidation(){
+
+        if(!$this->_autoValidated){
+
+            if($this->_throwValidationErrors && $this->wasSubmitted()){
+
+                $data = $this->collectData();
+                $validator = $this->getValidatorAdapter();
+
+                if(!$validator->validate($data)){
+                    $exception = $validator->createValidationException($validator->getValidator());
+                    throw $exception;
+                }
+
             }
 
             $this->_autoValidated = TRUE;
-
         }
-
-        return $this->collectData($prefix);
 
     }
 
