@@ -157,7 +157,7 @@ class Field extends FormItem{
         }
         // No exceptions inside __toString
         catch(\Exception $e){
-            return $e->getMessage() . " Line:" . $e->getLine() . " File:" . $e->getFile();
+            return get_class($e) .': '. $e->getMessage() . " Line:" . $e->getLine() . " File:" . $e->getFile();
             trigger_error($e->getMessage(),E_USER_WARNING);
         }
         return "";

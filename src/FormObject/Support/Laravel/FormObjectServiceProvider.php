@@ -1,12 +1,11 @@
 <?php namespace FormObject\Support\Laravel;
 
 use Illuminate\Support\ServiceProvider;
-use \FormObject\Renderer\PhpRenderer;
+use FormObject\Renderer\PhpRenderer;
+use FormObject\Form;
 use Config;
 
 class FormObjectServiceProvider extends ServiceProvider {
-
-    protected $templatePath = '';
 
     /**
         * Register the service provider.
@@ -15,19 +14,22 @@ class FormObjectServiceProvider extends ServiceProvider {
         */
     public function register()
     {
-        $this->app->singleton('\FormObject\AdapterFactoryInterface', function($app)
-        {
-            $adapter = new AdapterFactoryLaravel();
-            $renderer = new PhpRenderer();
-            if($paths = Config::get('view.formpaths')){
-                foreach($paths as $path){
-                    $renderer->addPath($path);
-                }
+
+        $adapter = new AdapterFactoryLaravel();
+        $renderer = new PhpRenderer();
+
+        if($paths = $this->app['config']->get('view.formpaths')){
+            foreach($paths as $path){
+                $renderer->addPath($path);
             }
-            $adapter->setRenderer($renderer);
-            $adapter->setEventDispatcher(new EventDispatcher($app['events']));
-            return $adapter;
-        });
+        }
+
+        $adapter->setRenderer($renderer);
+        $adapter->setEventDispatcher(new EventDispatcher($this->app['events']));
+
+        Form::setGlobalAdapter($adapter);
+
+        $this->app->instance('FormObject\AdapterFactoryInterface', $adapter);
     }
 
 }

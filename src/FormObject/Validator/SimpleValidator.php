@@ -77,6 +77,17 @@ class SimpleValidator implements ValidatorAdapterInterface{
         return array();
     }
 
+    public function createValidationException($validator){
+
+        $errors = [];
+
+        foreach($this->validators as $fieldName=>$validator){
+            $errors[$fieldName] = $validator->getMessages();
+        }
+
+        return new ValidationException($errors);
+    }
+
     public function getRuleNames($fieldName){
         if(isset($this->validators[$fieldName])){
             $refl = new ReflectionClass($this->validators[$fieldName]);

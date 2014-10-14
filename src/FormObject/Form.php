@@ -46,6 +46,8 @@ class Form extends FormItem implements ArrayAccess{
 
     protected $adapterFactory = NULL;
 
+    protected static $globalAdapterFactory;
+
     protected $validatorAdapter = NULL;
 
     protected $autoRedirectOnPost = FALSE;
@@ -54,18 +56,17 @@ class Form extends FormItem implements ArrayAccess{
 
     protected $autoFillByRequest = FALSE;
 
+    protected $_ignoreFillIfSubmitted = FALSE;
+
+    protected $_throwValidationErrors = FALSE;
+
+    protected $_autoValidated = FALSE;
 
     /**
     * @brief multipart/form-data
     * @var string
     */
     protected $encType = '';
-
-    public function __construct(AdapterFactoryInterface $adapterFactory){
-
-        $this->adapterFactory = $adapterFactory;
-
-    }
 
     protected function getEventSuffix(){
         return $this->getName();
@@ -99,7 +100,23 @@ class Form extends FormItem implements ArrayAccess{
     }
 
     public function getAdapter(){
-        return $this->adapterFactory;
+        if($this->adapterFactory){
+            return $this->adapterFactory;
+        }
+        return self::getGlobalAdapter();
+    }
+
+    public function setAdapter(AdapterFactoryInterface $adapter){
+        $this->adapterFactory = $adapter;
+        return $this;
+    }
+
+    public static function getGlobalAdapter(){
+        return self::$globalAdapterFactory;
+    }
+
+    public static function setGlobalAdapter(AdapterFactoryInterface $adapter){
+        self::$globalAdapterFactory = $adapter;
     }
 
     public function shouldAppendCsrfToken(){
@@ -133,7 +150,7 @@ class Form extends FormItem implements ArrayAccess{
 
     public function getValidatorAdapter(){
         if(!$this->validatorAdapter){
-            $this->validatorAdapter = $this->adapterFactory->createValidatorAdapter($this, $this->getValidator());
+            $this->validatorAdapter = $this->getAdapter()->createValidatorAdapter($this, $this->getValidator());
         }
         return $this->validatorAdapter;
     }
@@ -144,15 +161,30 @@ class Form extends FormItem implements ArrayAccess{
     }
 
     public function getValidator(){
+
         if(!$this->validator){
+
+            // Fix CreateValidator usages of $this->data or $this->getData
+            $throwValidationErrors = $this->_throwValidationErrors;
+
+            if($throwValidationErrors){
+                $this->_throwValidationErrors = FALSE;
+            }
+
             $validator = $this->createValidator();
+
+            $this->_throwValidationErrors = $throwValidationErrors;
+
             $eventName = 'form.validator-created.'. $this->getEventSuffix();
+
             $this->getAdapter()
                    ->getEventDispatcher()
                      ->fire($eventName,array($validator));
             $this->setValidator($validator);
         }
+
         return $this->validator;
+
     }
 
     protected function createValidator(){
@@ -257,7 +289,7 @@ class Form extends FormItem implements ArrayAccess{
 
     public function getAction(){
         if(!$this->action){
-            $this->setAction($this->adapterFactory->getDefaultAction($this));
+            $this->setAction($this->getAdapter()->getDefaultAction($this));
         }
         return $this->action;
     }
@@ -301,6 +333,10 @@ class Form extends FormItem implements ArrayAccess{
      * @return void
      **/
     public function fillByArray($data, $prefix=NULL){
+
+        if($this->_ignoreFillIfSubmitted && $this->wasSubmitted()){
+            return;
+        }
 
         foreach($this->getDataFields() as $field){
 
@@ -385,7 +421,25 @@ class Form extends FormItem implements ArrayAccess{
 
     public function getData($prefix=NULL){
 
-        $this->wasSubmitted();
+        if($this->wasSubmitted() && $this->_throwValidationErrors && !$this->_autoValidated){
+
+            $data = $this->collectData();
+            $validator = $this->getValidatorAdapter();
+//             print_r($data); dd($validator->validate($data));
+            if(!$validator->validate($data)){
+                $exception = $validator->createValidationException($validator->getValidator());
+                throw $exception;
+            }
+
+            $this->_autoValidated = TRUE;
+
+        }
+
+        return $this->collectData($prefix);
+
+    }
+
+    protected function collectData($prefix=NULL){
 
         $data = array();
 
@@ -410,6 +464,7 @@ class Form extends FormItem implements ArrayAccess{
                 $data[$fieldName] = $field->getValue();
             }
         }
+
         return $data;
     }
 
@@ -458,28 +513,45 @@ class Form extends FormItem implements ArrayAccess{
      * @param string $name Name of FormItem
      * @return FormItem
      **/
-    public static function create(AdapterFactoryInterface $adapterFactory){
-        $class = get_called_class();
-        return new $class($adapterFactory);
+    public static function create(){
+        return new static();
     }
 
     public function __toString(){
 
         try{
-            return $this->adapterFactory->getRenderer()->renderFormItem($this);
+            return $this->getAdapter()->getRenderer()->renderFormItem($this);
         }
         // No exceptions inside __toString
         catch(\Exception $e){
-            return $e->getMessage() . " Line:" . $e->getLine() . " File:" . $e->getFile();
+            return get_class($e) .': '. $e->getMessage() . " Line:" . $e->getLine() . " File:" . $e->getFile();
             trigger_error($e->getMessage(),E_USER_WARNING);
         }
         return "";
     }
 
     public function copy(){
-        $copy = static::create($this->adapterFactory);
+        $copy = static::create();
         $copy->setName($this->getName())
              ->setEncType($this->getEncType());
         return $copy;
+    }
+
+    public function ignoreFillIfSubmitted($ignore=TRUE){
+        $this->_ignoreFillIfSubmitted = $ignore;
+        return $this;
+    }
+
+    public function isFillIgnoredIfSubmitted(){
+        return $this->_ignoreFillIfSubmitted;
+    }
+
+    public function throwValidationException($doThrow=TRUE){
+        $this->_throwValidationErrors = $doThrow;
+        return $this;
+    }
+
+    public function areValidationExceptionsThrown(){
+        return $this->_throwValidationErrors;
     }
 }

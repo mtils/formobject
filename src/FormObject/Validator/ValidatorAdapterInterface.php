@@ -31,4 +31,12 @@ interface ValidatorAdapterInterface{
      **/
     public function getRuleNames($fieldName);
 
+    /**
+     * @brief Creates the exception if you like exception based validation
+     *
+     * @param mixed $validator
+     * @return Exception
+     **/
+    public function createValidationException($validator);
+
 }
