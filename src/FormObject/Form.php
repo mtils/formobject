@@ -56,9 +56,9 @@ class Form extends FormItem implements ArrayAccess{
 
     protected $autoFillByRequest = FALSE;
 
-    protected $_ignoreFillIfSubmitted = FALSE;
+    protected $_ignoreFillIfSubmitted = TRUE;
 
-    protected $_throwValidationErrors = FALSE;
+    protected $_throwValidationErrors = TRUE;
 
     protected $_autoValidated = FALSE;
 
