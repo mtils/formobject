@@ -157,4 +157,14 @@ class ProxyValidatorAdapter implements ValidatorAdapterInterface, ArrayAccess{
 //         echo "<br/>getRuleNames $fieldName was translated to $mappedName<br/>";
         return $this->srcAdapter->getRuleNames($mappedName);
     }
+
+    public function createValidationException($validator){
+
+        if(!$mappedName = $this->getSrcName($fieldName)){
+            $mappedName = $fieldName;
+        }
+
+        return $this->srcAdapter->createValidationException($fieldName);
+
+    }
 }
