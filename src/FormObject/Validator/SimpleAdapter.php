@@ -45,4 +45,14 @@ class SimpleAdapter implements ValidatorAdapterInterface{
     public function getRuleNames($fieldName){
         return $this->validator->getRuleNames($fieldName);
     }
+
+    /**
+     * @brief Creates the exception if you like exception based validation
+     *
+     * @param mixed $validator
+     * @return Exception
+     **/
+    public function createValidationException($validator){
+        return new ValidationException($validator->allMessages());
+    }
 }

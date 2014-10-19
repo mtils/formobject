@@ -6,13 +6,19 @@ error_reporting(E_ALL);
 
 require_once "lib/AutoLoader.php";
 
-use \FormObject\Registry;
-use \FormObject\Renderer;
-use \FormObject\Form;
-use \FormObject\Field;
-use \FormObject\Field\TextField;
+use FormObject\Renderer\PhpRenderer;
+use FormObject\Form;
+use FormObject\Field;
+use FormObject\Field\TextField;
+use FormObject\AdapterFactorySimple;
 
-Registry::getRenderer()->addPath(dirname(__FILE__).'/themes/simple');
+$renderer = new PhpRenderer();
+$renderer->addPath(__DIR__.'/themes/simple');
+$adapter = new AdapterFactorySimple();
+$adapter->setRenderer($renderer);
+
+Form::setGlobalAdapter($adapter);
+
 
 /**
  * @brief ...
@@ -21,10 +27,10 @@ Registry::getRenderer()->addPath(dirname(__FILE__).'/themes/simple');
 $form = Form::create();
 $form->push(
     TextField::create('name')->setValue('Billy')->setTitle('Please enter your name'),
-    TextField::create('surname')->setValue('Talent')->setTitle('Please enter your surname'),
+    TextField::create('surname')->setValue('Talent')->setTitle('Please enter your surname')
 );
 
-echo $form;
+// echo $form;
 
 echo "\n".$form['name'];
 echo "\n".$form['surname'];

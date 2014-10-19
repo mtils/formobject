@@ -13,6 +13,7 @@ use FormObject\Field\TextField;
 use FormObject\Field\Action;
 use FormObject\Field\CheckboxField;
 use FormObject\Field\BooleanRadioField;
+use FormObject\Field\SelectFlagsField;
 
 use FormObject\Validator\SimpleValidator;
 use FormObject\Validator\TextValidator;
@@ -26,7 +27,11 @@ use FormObject\Validator\ValidationException;
  * @brief ...
  * @var \FormObject\Form
  */
-$form = Form::create($factory);
+$form = Form::create();
+
+$flagItems = ['swimming','snowboarding','music','theater'];
+
+$flagsField = SelectFlagsField::create('interests','Interests')->setSrc($flagItems)->setValue(12);
 
 $form->push(
 
@@ -37,21 +42,9 @@ $form->push(
     TextField::create('surname')
                ->setTitle('Please enter your surname')
                ->setValue('Talent'),
-
-    CheckboxField::create('rememberMe')
-                   ->setTitle('Remember Me'),
+    $flagsField
 
 
-    BooleanRadioField::create('rememberMyRadio')
-                       ->setTitle('Remember my radio')
-                       ->setStringForTrue('Remember my radio')
-                       ->setStringForFalse('Forget my radio')
-                       ->setValue(TRUE),
-
-    TextField::create('message')
-               ->setTitle('Message')
-               ->setValue('')
-               ->setMultiLine(TRUE)
 );
 
 $nameValidator = new TextValidator();
@@ -62,14 +55,10 @@ $nameValidator->setMaxLength = 12;
 $surnameValidator = new RequiredValidator;
 $surnameValidator->required = TRUE;
 
-$requiredValidator = new BooleanValidator();
-$requiredValidator->mustBeTrue = TRUE;
-
 $validator = new SimpleValidator($form);
 $validator->set('name', $nameValidator);
 $validator->set('surname', $surnameValidator);
-$validator->set('rememberMyRadio', $requiredValidator);
-$validator->set('message', $requiredValidator);
+
 
 $form->setValidator($validator);
 
@@ -77,7 +66,10 @@ $data = array();
 
 try{
     $data = $form->getData();
+    // Continue here
 }
-catch(ValidationException $e){}
+catch(ValidationException $e){
+    // Redirect here
+}
 
 include dirname(__FILE__).'/themes/bootstrap/templates/index.phtml';

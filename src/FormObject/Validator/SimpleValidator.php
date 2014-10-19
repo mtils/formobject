@@ -77,7 +77,7 @@ class SimpleValidator implements ValidatorAdapterInterface{
         return array();
     }
 
-    public function createValidationException($validator){
+    public function allMessages(){
 
         $errors = [];
 
@@ -85,7 +85,7 @@ class SimpleValidator implements ValidatorAdapterInterface{
             $errors[$fieldName] = $validator->getMessages();
         }
 
-        return new ValidationException($errors);
+        return $errors;
     }
 
     public function getRuleNames($fieldName){
@@ -95,4 +95,15 @@ class SimpleValidator implements ValidatorAdapterInterface{
         }
         return array();
     }
+
+    /**
+     * @brief Creates the exception if you like exception based validation
+     *
+     * @param mixed $validator
+     * @return Exception
+     **/
+    public function createValidationException($validator){
+        return new ValidationException($this->allMessages());
+    }
+
 }

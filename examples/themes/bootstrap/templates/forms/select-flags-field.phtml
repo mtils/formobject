@@ -1,0 +1,46 @@
+    <div class="form-group<? if(!$item->isValid()) echo ' has-error'; ?>">
+        <? if(!$item->hasCssClass('no-label')): ?>
+            <label class="control-label" for="<?=$item->id ?>"><?=$item->title ?></label>
+        <? endif ?>
+        <? if($item->className == 'MultiCheckboxField' || $item->getColumns()): ?>
+            <? if($item->className == 'MultiCheckboxField'): ?>
+            <br/>
+                <? foreach($item as $option): ?>
+                    <label class="checkbox-inline checkbox-set"><input name="<?= $item->name ?>[]" type="checkbox" value="<?= $option->key ?>"<?= $option->selected ? ' checked="checked"' : '' ?>>
+                        <?= $option ?>
+                    </label>
+                    <br/>
+                <? endforeach ?>
+            <? elseif($columns = $item->getColumns()): ?>
+            <table class="table table-bordered">
+                <tr>
+                    <th>&nbsp;</th>
+                <? foreach($columns as $column): ?>
+                    <th><?= $column->title ?></th>
+                <? endforeach ?>
+                <? foreach($item as $option): ?>
+                    <tr>
+                        <td><label class="checkbox-inline"><input name="<?= $item->name ?>[]" type="checkbox" value="<?= $option->key ?>"<?= $option->selected ? ' checked="checked"' : '' ?>></td>
+                    <? foreach($item->getColumns() as $col): ?>
+                        <td><?= $col->value ?></td>
+                    <? endforeach ?>
+                    </tr>
+                <? endforeach ?>
+                </tr>
+            </table>
+            <? endif ?>
+        <? else: ?>
+            <select <?=$item->addCssClass('form-control')->attributes->without('name')->set('multiple','multiple') ?> name="<?= $item->getName() ?>[]" ?>>
+            <? foreach($item as $option): ?>
+            <option value="<?= $option->key ?>"<?= $option->selected ? ' selected="selected"' : '' ?>><?= $option ?></option>
+            <? endforeach ?>
+            </select>
+        <? endif ?>
+        <? if(!$item->isValid()): ?>
+        <? foreach($item->messages as $error): ?>
+        <span class="help-inline"><?= $error ?></span>
+        <? endforeach ?>
+        <? elseif($item->description): ?>
+        <span class="help-inline"><?= $item-description ?></span>
+        <? endif ?>
+    </div>

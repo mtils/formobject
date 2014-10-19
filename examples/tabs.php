@@ -5,6 +5,7 @@ ini_set("display_errors","On");
 error_reporting(E_ALL);
 
 require_once "lib/AutoLoader.php";
+require_once 'lib/simple_init.php';
 
 use FormObject\Registry;
 use FormObject\Renderer;
@@ -24,17 +25,11 @@ use FormObject\Validator\TextValidator;
 use FormObject\Validator\BooleanValidator;
 use FormObject\Validator\RequiredValidator;
 
-$renderer = new Renderer\PhpRenderer();
-$renderer->addPath(dirname(__FILE__).'/themes/bootstrap/templates/forms');
-
-$factory = new AdapterFactorySimple();
-$factory->setRenderer($renderer);
-
 /**
  * @brief ...
  * @var \FormObject\Form
  */
-$form = Form::create($factory);
+$form = Form::create();
 $form->setMethod(Form::GET);
 
 $name = new TextField('name', 'Please enter your name');

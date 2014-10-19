@@ -8,6 +8,6 @@ interface ValidatorInterface{
 
     public function getMessages();
 
-    public function createValidationException($validator);
+//     public function createValidationException($validator);
 
 }
