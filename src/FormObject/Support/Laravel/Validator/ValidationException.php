@@ -1,4 +1,4 @@
-<?php namespace FormObject\Support\Laravel;
+<?php namespace FormObject\Support\Laravel\Validator;
 
 use Illuminate\Support\Contracts\MessageProviderInterface;
 use Illuminate\Support\MessageBag;

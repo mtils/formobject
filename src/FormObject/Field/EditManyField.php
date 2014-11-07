@@ -12,7 +12,7 @@ use Iterator;
 use ArrayAccess;
 use BadMethodCallException;
 use DomainException;
-use FormObject\Validator\ProxyValidatorAdapter;
+use FormObject\Validator\ProxyValidator;
 
 class EditManyField extends Field implements Iterator, ArrayAccess{
 
@@ -135,11 +135,11 @@ class EditManyField extends Field implements Iterator, ArrayAccess{
 
         $itemForm->setName($this->getName()."_{$idx}");
 
-        $srcAdapter = $this->itemForm->getValidatorAdapter();
+        $srcValidator = $this->itemForm->getValidator();
 
-        $proxyAdapter = new ProxyValidatorAdapter($itemForm, $srcAdapter);
+        $proxyValidator = new ProxyValidator($itemForm, $srcValidator);
 
-        $itemForm->setValidatorAdapter($proxyAdapter);
+        $itemForm->setValidator($proxyValidator);
 
         $values = array();
 

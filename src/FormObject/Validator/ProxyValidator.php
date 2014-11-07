@@ -3,9 +3,9 @@
 use ArrayAccess;
 use FormObject\Form;
 
-class ProxyValidatorAdapter implements ValidatorAdapterInterface, ArrayAccess{
+class ProxyValidator implements ValidatorInterface, ArrayAccess{
 
-    protected $srcAdapter;
+    protected $srcValidator;
 
     protected $fieldMap = array();
 
@@ -17,19 +17,19 @@ class ProxyValidatorAdapter implements ValidatorAdapterInterface, ArrayAccess{
 
     protected $form;
 
-    public function __construct(Form $form, ValidatorAdapterInterface $srcAdapter=NULL){
+    public function __construct(Form $form, ValidatorInterface $srcValidator=NULL){
         $this->form = $form;
-        if($srcAdapter){
-            $this->setSrcAdapter($srcAdapter);
+        if($srcValidator){
+            $this->setSrcValidator($srcValidator);
         }
     }
 
-    public function getSrcAdapter(){
-        return $srcAdapter;
+    public function getSrcValidator(){
+        return $srcValidator;
     }
 
-    public function setSrcAdapter(ValidatorAdapterInterface $srcAdapter){
-        $this->srcAdapter = $srcAdapter;
+    public function setSrcValidator(ValidatorInterface $srcValidator){
+        $this->srcValidator = $srcValidator;
         return $this;
     }
 
@@ -57,14 +57,14 @@ class ProxyValidatorAdapter implements ValidatorAdapterInterface, ArrayAccess{
             }
             $mappedData[$mappedName] = $value;
         }
-        $res = $this->srcAdapter->validate($mappedData);
+        $res = $this->srcValidator->validate($mappedData);
 //         echo "\n";
 //         print_r($mappedData);
         echo "\nRESULT:"; var_dump($res);
         foreach($mappedData as $fieldName=>$value){
-            $this->messagesCache[$fieldName] = $this->srcAdapter->getMessages($fieldName);
+            $this->messagesCache[$fieldName] = $this->srcValidator->getMessages($fieldName);
         }
-//         print_r($this->srcAdapter->getValidator()->getRules());
+//         print_r($this->srcValidator->getValidator()->getRules());
 //         print_r($this->messagesCache);
         $this->validated = TRUE;
         return $res;
@@ -81,11 +81,11 @@ class ProxyValidatorAdapter implements ValidatorAdapterInterface, ArrayAccess{
     }
 
     public function getValidator(){
-        return $this->srcAdapter->getValidator();
+        return $this->srcValidator->getValidator();
     }
 
     public function setValidator($validator){
-        $this->srcAdapter->setValidator($validator);
+        $this->srcValidator->setValidator($validator);
         return $this;
     }
 
@@ -121,7 +121,7 @@ class ProxyValidatorAdapter implements ValidatorAdapterInterface, ArrayAccess{
             $this->validate($this->form->data);
         }
 
-        return $this->srcAdapter->hasErrors($mappedName);
+        return $this->srcValidator->hasErrors($mappedName);
 
     }
 
@@ -139,7 +139,7 @@ class ProxyValidatorAdapter implements ValidatorAdapterInterface, ArrayAccess{
         if(!$this->validated){
             $this->validate($this->form->data);
         }
-        return $this->srcAdapter->getMessages($mappedName);
+        return $this->srcValidator->getMessages($mappedName);
 
     }
 
@@ -155,7 +155,7 @@ class ProxyValidatorAdapter implements ValidatorAdapterInterface, ArrayAccess{
             $mappedName = $fieldName;
         }
 //         echo "<br/>getRuleNames $fieldName was translated to $mappedName<br/>";
-        return $this->srcAdapter->getRuleNames($mappedName);
+        return $this->srcValidator->getRuleNames($mappedName);
     }
 
     public function createValidationException($validator){
@@ -164,7 +164,7 @@ class ProxyValidatorAdapter implements ValidatorAdapterInterface, ArrayAccess{
             $mappedName = $fieldName;
         }
 
-        return $this->srcAdapter->createValidationException($fieldName);
+        return $this->srcValidator->createValidationException($fieldName);
 
     }
 }

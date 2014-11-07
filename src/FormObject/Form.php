@@ -2,12 +2,27 @@
 
 namespace FormObject;
 
-use \ArrayAccess;
-use \FormObject\Field\Action;
-use \FormObject\Field\HiddenField;
-use \FormObject\Validator\ValidatorAdapterInterface;
-use FormObject\Validator\SimpleValidator;
+use ArrayAccess;
 use ReflectionClass;
+
+use FormObject\Field\Action;
+use FormObject\Field\HiddenField;
+
+use FormObject\Validator\ValidatorInterface;
+use FormObject\Validator\FactoryInterface;
+use FormObject\Validator\SimpleFactory;
+use FormObject\Validator\SimpleValidator;
+
+use FormObject\Http\ActionUrlProviderInterface;
+use FormObject\Http\RequestUriActionUrlProvider;
+use FormObject\Http\RequestProviderInterface;
+use FormObject\Http\GlobalsRequestProvider;
+
+use FormObject\Renderer\RendererInterface;
+use FormObject\Renderer\PhpRenderer;
+
+use FormObject\Event\DispatcherInterface;
+use FormObject\Event\Dispatcher;
 
 class Form extends FormItem implements ArrayAccess{
 
@@ -18,6 +33,18 @@ class Form extends FormItem implements ArrayAccess{
     const REQUEST = 1;
 
     const MANUAL = 2;
+
+    protected static $defaultActionProvider;
+
+    protected static $renderer;
+
+    protected static $validatorFactory;
+
+    protected static $requestProvider;
+
+    protected static $eventDispatcher;
+
+    protected static $formModifiers = [];
 
     /**
     * @brief Holds the Form Fields
@@ -36,6 +63,8 @@ class Form extends FormItem implements ArrayAccess{
 
     protected $method = self::POST;
 
+    protected $verb = self::POST;
+
     protected $_needsValidation = NULL;
 
     protected $_wasSubmitted = NULL;
@@ -43,12 +72,6 @@ class Form extends FormItem implements ArrayAccess{
     protected $dataOrigin;
 
     protected $validator = NULL;
-
-    protected $adapterFactory = NULL;
-
-    protected static $globalAdapterFactory;
-
-    protected $validatorAdapter = NULL;
 
     protected $autoRedirectOnPost = FALSE;
 
@@ -73,50 +96,29 @@ class Form extends FormItem implements ArrayAccess{
     }
 
     public function getFields(){
+
         if(!$this->_fields){
+
             $this->_fields = $this->createFields();
-            $this->appendAdditionalFields($this->_fields);
-            $eventName = 'form.fields-created.'.$this->getEventSuffix();
-            $this->getAdapter()
-                   ->getEventDispatcher()
-                     ->fire($eventName,array($this->_fields));
+
+            $this->fireEvent('form.fields-created',[$this->_fields]);
+
+            static::callFormModifiers($this);
+
         }
         return $this->_fields;
     }
 
-    protected function appendAdditionalFields(FieldList &$fields){
-        //do nothing
-    }
-
     public function getActions(){
+
         if(!$this->_actions){
+
             $this->_actions = $this->createActions();
-            $eventName = 'form.actions-created.'. $this->getEventSuffix();
-            $this->getAdapter()
-                   ->getEventDispatcher()
-                     ->fire($eventName,array($this->_actions));
+
+            $this->fireEvent('form.actions-created', [$this->_actions]);
+
         }
         return $this->_actions;
-    }
-
-    public function getAdapter(){
-        if($this->adapterFactory){
-            return $this->adapterFactory;
-        }
-        return self::getGlobalAdapter();
-    }
-
-    public function setAdapter(AdapterFactoryInterface $adapter){
-        $this->adapterFactory = $adapter;
-        return $this;
-    }
-
-    public static function getGlobalAdapter(){
-        return self::$globalAdapterFactory;
-    }
-
-    public static function setGlobalAdapter(AdapterFactoryInterface $adapter){
-        self::$globalAdapterFactory = $adapter;
     }
 
     public function shouldAppendCsrfToken(){
@@ -148,38 +150,14 @@ class Form extends FormItem implements ArrayAccess{
         $attributes['action'] = $this->getAction();
     }
 
-    public function getValidatorAdapter(){
-        if(!$this->validatorAdapter){
-            $this->validatorAdapter = $this->getAdapter()->createValidatorAdapter($this, $this->getValidator());
-        }
-        return $this->validatorAdapter;
-    }
-
-    public function setValidatorAdapter(ValidatorAdapterInterface $adapter){
-        $this->validatorAdapter = $adapter;
-        return $this;
-    }
-
     public function getValidator(){
 
         if(!$this->validator){
 
-            // Fix CreateValidator usages of $this->data or $this->getData
-            $throwValidationErrors = $this->_throwValidationErrors;
+            $validator = static::getValidatorFactory()->createValidator($this);
 
-            if($throwValidationErrors){
-                $this->_throwValidationErrors = FALSE;
-            }
+            $this->fireEvent('form.validator-created',[$validator]);
 
-            $validator = $this->createValidator();
-
-            $this->_throwValidationErrors = $throwValidationErrors;
-
-            $eventName = 'form.validator-created.'. $this->getEventSuffix();
-
-            $this->getAdapter()
-                   ->getEventDispatcher()
-                     ->fire($eventName,array($validator));
             $this->setValidator($validator);
         }
 
@@ -187,13 +165,12 @@ class Form extends FormItem implements ArrayAccess{
 
     }
 
-    protected function createValidator(){
-        return new SimpleValidator($this);
-    }
+    public function setValidator(ValidatorInterface $validator){
 
-    public function setValidator($validator){
         $this->validator = $validator;
-        $this->getValidatorAdapter()->setValidator($this->validator);
+
+        $this->fireEvent('form.validator-setted',[$validator]);
+
         return $this;
     }
 
@@ -290,13 +267,25 @@ class Form extends FormItem implements ArrayAccess{
 
     public function getAction(){
         if(!$this->action){
-            $this->setAction($this->getAdapter()->getDefaultAction($this));
+            $this->getActionUrlProvider()->setActionUrl($this);
         }
         return $this->action;
     }
 
     public function setAction($action){
         $this->action = $action;
+        return $this;
+    }
+
+    public function getVerb(){
+        if($this->verb){
+            return $this->verb;
+        }
+        return $this->getAction();
+    }
+
+    public function setVerb($verb){
+        $this->verb = $verb;
         return $this;
     }
 
@@ -381,7 +370,7 @@ class Form extends FormItem implements ArrayAccess{
     public function fillByRequestArray($request=NULL){
 
         if(is_null($request)){
-            $request = $this->getAdapter()->getRequestAsArray($this->getMethod());
+            $request = $this->getRequestProvider()->getRequestAsArray($this->getMethod());
         }
 
         $this->_wasSubmitted = FALSE;
@@ -432,15 +421,9 @@ class Form extends FormItem implements ArrayAccess{
 
         if(!$this->_autoValidated){
 
-            if($this->_throwValidationErrors && $this->wasSubmitted()){
+            if($this->wasSubmitted()){
 
-                $data = $this->collectData();
-                $validator = $this->getValidatorAdapter();
-
-                if(!$validator->validate($data)){
-                    $exception = $validator->createValidationException($validator->getValidator());
-                    throw $exception;
-                }
+                $this->getValidator()->validate($this->collectData());
 
             }
 
@@ -530,7 +513,7 @@ class Form extends FormItem implements ArrayAccess{
     public function __toString(){
 
         try{
-            return $this->getAdapter()->getRenderer()->renderFormItem($this);
+            return $this->getRenderer()->renderFormItem($this);
         }
         // No exceptions inside __toString
         catch(\Exception $e){
@@ -563,5 +546,80 @@ class Form extends FormItem implements ArrayAccess{
 
     public function areValidationExceptionsThrown(){
         return $this->_throwValidationErrors;
+    }
+
+    public static function getActionUrlProvider(){
+        if(!static::$defaultActionProvider){
+            static::$defaultActionProvider = new RequestUriActionUrlProvider;
+        }
+        return static::$defaultActionProvider;
+    }
+
+    public static function setActionUrlProvider(ActionUrlProviderInterface $provider){
+        static::$defaultActionProvider = $provider;
+    }
+
+    public static function getRenderer(){
+        if(!static::$renderer){
+            static::$renderer = new PhpRenderer();
+        }
+        return static::$renderer;
+    }
+
+    public static function setRenderer(RendererInterface $renderer){
+        static::$renderer = $renderer;
+    }
+
+    public static function getValidatorFactory(){
+        if(!static::$validatorFactory){
+            static::$validatorFactory= new SimpleFactory();
+        }
+        return static::$validatorFactory;
+    }
+
+    public static function setValidatorFactory(FactoryInterface $factory){
+        static::$validatorFactory = $factory;
+    }
+
+    public static function getRequestProvider(){
+        if(!static::$requestProvider){
+            static::$requestProvider = new GlobalsRequestProvider();
+        }
+        return static::$requestProvider;
+    }
+
+    public static function setRequestProvider(RequestProviderInterface $provider){
+        static::$requestProvider = $provider;
+    }
+
+    public static function getEventDispatcher(){
+
+        if(!static::$eventDispatcher){
+            static::$eventDispatcher = new Dispatcher();
+        }
+        return static::$eventDispatcher;
+
+    }
+
+    public static function setEventDispatcher(DispatcherInterface $dispatcher){
+        static::$eventDispatcher = $dispatcher;
+    }
+
+    protected function fireEvent($eventPrefix, array $params){
+        $eventName = $eventPrefix . '.' . $this->getEventSuffix();
+        static::getEventDispatcher()->fire($eventName, $params);
+    }
+
+    public static function addFormModifier($modifier){
+        if(!is_callable($modifier)){
+            throw new InvalidArgumentException('Modifier has to be callable');
+        }
+        static::$formModifiers[] = $modifier;
+    }
+
+    protected static function callFormModifiers(Form $form){
+        foreach(static::$formModifiers as $modifier){
+            $modifier($form);
+        }
     }
 }

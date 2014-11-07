@@ -1,7 +1,7 @@
 <?php namespace FormObject\Validator;
 
-use \FormObject\FormItem;
+use FormObject\Form;
 
 interface FactoryInterface{
-    public function createForField(FormItem $item);
+    public function createValidator(Form $form);
 }

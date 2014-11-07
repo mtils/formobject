@@ -42,7 +42,7 @@ class Field extends FormItem{
     public function initCssClasses(){
         parent::initCssClasses();
         if(!$this->ruleClassesAdded && $this->form){
-            foreach($this->form->getValidatorAdapter()->getRuleNames($this->name) as $ruleName){
+            foreach($this->form->getValidator()->getRuleNames($this->name) as $ruleName){
                 $this->cssClasses->append($ruleName);
             }
             $this->ruleClassesAdded = TRUE;
@@ -127,14 +127,14 @@ class Field extends FormItem{
         }
 
         if($this->valid === NULL){
-            $this->valid = !$this->form->getValidatorAdapter()->hasErrors($this->name);
+            $this->valid = !$this->form->getValidator()->hasErrors($this->name);
         }
 
         return $this->valid;
     }
 
     public function getMessages(){
-        return $this->form->getValidatorAdapter()->getMessages($this->name);
+        return $this->form->getValidator()->getMessages($this->name);
     }
 
     /**
@@ -153,7 +153,7 @@ class Field extends FormItem{
     public function __toString(){
 
         try{
-            return $this->form->getAdapter()->getRenderer()->renderFormItem($this);
+            return $this->form->getRenderer()->renderFormItem($this);
         }
         // No exceptions inside __toString
         catch(\Exception $e){

@@ -1,6 +1,7 @@
-<?php namespace FormObject;
+<?php namespace FormObject\Event;
 
-class EventDispatcher implements EventDispatcherInterface{
+class Dispatcher implements DispatcherInterface{
+
     /**
      * @brief Fires an event. This is exactly the laravel Event\Dispatcher
      *        Interface. If you need an adapter, write one
@@ -8,4 +9,5 @@ class EventDispatcher implements EventDispatcherInterface{
     public function fire($event, $payload = array(), $halt = false){
         
     }
+
 }
