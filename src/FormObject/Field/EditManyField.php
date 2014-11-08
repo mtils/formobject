@@ -157,7 +157,7 @@ class EditManyField extends Field implements Iterator, ArrayAccess{
             $fieldName = $field->getName();
             $newFieldName = $this->name . "[$this->iteratorPosition][$fieldName]";
 
-            $proxyAdapter->map($fieldName, $newFieldName);
+            $proxyValidator->map($fieldName, $newFieldName);
 
             $copy->setName($newFieldName);
 

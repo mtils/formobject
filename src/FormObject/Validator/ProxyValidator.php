@@ -48,7 +48,7 @@ class ProxyValidator implements ValidatorInterface, ArrayAccess{
         return $this;
     }
 
-    public function validate($data){
+    public function validate(array $data){
 
         $mappedData = array();
         foreach($data as $fieldName=>$value){
