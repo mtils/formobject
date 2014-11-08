@@ -63,7 +63,7 @@ class Form extends FormItem implements ArrayAccess{
 
     protected $method = self::POST;
 
-    protected $verb = self::POST;
+    protected $verb;
 
     protected $_needsValidation = NULL;
 
@@ -102,8 +102,6 @@ class Form extends FormItem implements ArrayAccess{
             $this->_fields = $this->createFields();
 
             $this->fireEvent('form.fields-created',[$this->_fields]);
-
-            static::callFormModifiers($this);
 
         }
         return $this->_fields;
@@ -281,7 +279,7 @@ class Form extends FormItem implements ArrayAccess{
         if($this->verb){
             return $this->verb;
         }
-        return $this->getAction();
+        return $this->getMethod();
     }
 
     public function setVerb($verb){
@@ -511,6 +509,8 @@ class Form extends FormItem implements ArrayAccess{
     }
 
     public function __toString(){
+
+        static::callFormModifiers($this);
 
         try{
             return $this->getRenderer()->renderFormItem($this);

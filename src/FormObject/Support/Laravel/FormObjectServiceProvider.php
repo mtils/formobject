@@ -47,10 +47,12 @@ class FormObjectServiceProvider extends ServiceProvider {
 
         Form::addFormModifier( function(Form $form){
 
+            // Trigger auto action setter
+            $form->getAction();
+
             $verb = strtoupper($form->getVerb());
 
             if(in_array($verb, ['PUT','PATCH','DELETE'])){
-
                 $form->push(HiddenField::create('_method')
                                          ->setValue($verb));
             }
