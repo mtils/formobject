@@ -26,18 +26,18 @@ class Factory implements FactoryInterface{
 
         }
 
-        // Look for an getRules() method
-        elseif(method_exists($form, 'getRules')){
-            $rules = $form->getRules();
+        // Look for an validationRules() method
+        elseif(method_exists($form, 'validationRules')){
+            $rules = $form->validationRules();
             $validator = new Validator($form);
             $validator->setRules($rules);
             return $validator;
         }
 
-        // Look for public rules property
-        elseif(isset($form->rules)){
+        // Look for public validationRules property
+        elseif(property_exists($form, 'validationRules')){
             $validator = new Validator($form);
-            $validator->setRules($form->rules);
+            $validator->setRules($form->validationRules);
             return $validator;
         }
 
