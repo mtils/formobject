@@ -99,24 +99,65 @@ class Form extends FormItem implements ArrayAccess{
 
         if(!$this->_fields){
 
-            $this->_fields = $this->createFields();
-
-            $this->fireEvent('form.fields-created',[$this->_fields]);
+            $this->setFields($this->createFields());
 
         }
+
         return $this->_fields;
+    }
+
+    public function setFields(FieldList $fields){
+
+        $this->_fields = $fields;
+
+        $this->_fields->setName('_root');
+
+        $this->_fields->setForm($this);
+
+        $this->fireEvent('form.fields-setted',[$this->_fields]);
+
+        return $this;
+
+    }
+
+    protected function createFields(){
+        $fields = new FieldList;
+        $fields->setForm($this);
+        $fields->setName('_root');
+        return $fields;
     }
 
     public function getActions(){
 
         if(!$this->_actions){
 
-            $this->_actions = $this->createActions();
-
-            $this->fireEvent('form.actions-created', [$this->_actions]);
+            $this->setActions($this->createActions());
 
         }
         return $this->_actions;
+    }
+
+    public function setActions(FieldList $actions){
+
+        $this->_actions = $actions;
+
+        $this->_actions->setName('_actions');
+
+        $this->_actions->setForm($this);
+
+        $this->fireEvent('form.actions-setted',[$this->_actions]);
+
+        return $this;
+
+    }
+
+    protected function createActions(){
+        $actions = new FieldList;
+        $actions->setForm($this);
+
+        $actions->push(Action::create('submit')->setTitle('Submit'));
+
+        return $actions;
     }
 
     public function shouldAppendCsrfToken(){
@@ -154,8 +195,6 @@ class Form extends FormItem implements ArrayAccess{
 
             $validator = static::getValidatorFactory()->createValidator($this);
 
-            $this->fireEvent('form.validator-created',[$validator]);
-
             $this->setValidator($validator);
         }
 
@@ -174,22 +213,6 @@ class Form extends FormItem implements ArrayAccess{
 
     public function getDataOrigin(){
         return $this->dataOrigin;
-    }
-
-    protected function createFields(){
-        $fields = new FieldList;
-        $fields->setForm($this);
-        $fields->setName('_root');
-        return $fields;
-    }
-
-    protected function createActions(){
-        $actions = new FieldList;
-        $actions->setForm($this);
-
-        $actions->push(Action::create('submit')->setTitle('Submit'));
-
-        return $actions;
     }
 
     public function getId(){
@@ -504,8 +527,12 @@ class Form extends FormItem implements ArrayAccess{
      * @param string $name Name of FormItem
      * @return FormItem
      **/
-    public static function create(){
-        return new static();
+    public static function create($name=NULL){
+        $form = new static();
+        if($name){
+            $form->setName();
+        }
+        return $form;
     }
 
     public function __toString(){
