@@ -19,9 +19,14 @@ class ResourceActionUrlProvider implements ActionUrlProviderInterface{
 
         $current = explode('/', rtrim(URL::current(),'/'));
         $lastSegment = array_pop($current);
-        $parentUrl = implode('/',$current);
 
-        $form->setAction($parentUrl);
+        if(in_array($lastSegment, ['create','edit'])){
+
+            $parentUrl = implode('/',$current);
+
+            $form->setAction($parentUrl);
+
+        }
 
         if($lastSegment == 'create'){
             $form->setVerb('post');
