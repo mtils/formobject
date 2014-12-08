@@ -530,7 +530,7 @@ class Form extends FormItem implements ArrayAccess{
     public static function create($name=NULL){
         $form = new static();
         if($name){
-            $form->setName();
+            $form->setName($name);
         }
         return $form;
     }
