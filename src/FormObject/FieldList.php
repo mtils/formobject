@@ -219,7 +219,7 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
     public function _removeDataField(Field $field){
         $removeIdx = -1;
         foreach($this->dataFields as $i=>$dataField){
-            if($dataField->getId() == $field->getId){
+            if($dataField->getId() == $field->getId()){
                 $removeIdx = $i;
                 break;
             }
