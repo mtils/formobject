@@ -9,23 +9,29 @@ class Attributes extends StringDictionary{
     public $prefix = '';
     public $suffix = '';
 
+    /**
+     * Encodes the attribute values
+     *
+     * @param string $string
+     * @return string
+     **/
     public static function valueEncode($string){
-        $search = array('"','&');
-        $replace = array('&quot;','&amp;');
-        return trim(strip_tags(str_replace($search,$replace,$string)));
+        return trim(strip_tags(htmlspecialchars($string, ENT_QUOTES)));
     }
 
+    /**
+     * Return the html formated attributes
+     *
+     * @return string
+     **/
     public function __toString(){
+
         $rows = array();
-//         var_dump($this);
-//         try{
-            foreach($this as $key=>$value){
-                $rows[] = "{$key}{$this->keyValueDelimiter}\"" . self::valueEncode("$value") . '"';
-            }
-//         }
-//         catch(\Exception $e){
-//             echo "HHIIIAAA: ".$e->getMessage() . $e->getLine().$e->getFile();
-//         }
+
+        foreach($this as $key=>$value){
+            $rows[] = "{$key}{$this->keyValueDelimiter}\"" . self::valueEncode("$value") . '"';
+        }
+
         return $this->prefix . implode($this->rowDelimiter, $rows) . $this->suffix;
     }
 
