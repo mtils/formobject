@@ -33,17 +33,31 @@ class FormObjectServiceProvider extends ServiceProvider {
             }
         }
 
+        Form::setRenderer($renderer);
+
+        Form::setEventDispatcher(new Dispatcher($this->app['events']));
+
+    }
+
+    public function boot(){
+
         $chain = new ActionUrlProviderChain();
         Form::setActionUrlProvider($chain);
 
-        $chain->add(new CurrentActionUrlProvider);
-        $chain->add(new ResourceActionUrlProvider);
+        $currentUrlProvider = new CurrentActionUrlProvider(
+            $this->app['url'],
+            $this->app['request']
+        );
 
-        Form::setRequestProvider(new InputRequestProvider);
-        Form::setRenderer($renderer);
+        $chain->add($currentUrlProvider);
+        $chain->add(new ResourceActionUrlProvider(
+            $currentUrlProvider,
+            $this->app['router'])
+        );
+
+        Form::setRequestProvider(new InputRequestProvider($this->app['request']));
+
         Form::setValidatorFactory(new Factory);
-
-        Form::setEventDispatcher(new Dispatcher($this->app['events']));
 
         Form::addFormModifier( function(Form $form){
 
@@ -58,7 +72,6 @@ class FormObjectServiceProvider extends ServiceProvider {
             }
 
         });
-
     }
 
 }

@@ -1,11 +1,32 @@
 <?php namespace FormObject\Support\Laravel\Http;
 
-use URL;
-
 use FormObject\Form;
 use FormObject\Http\ActionUrlProviderInterface;
 
+use Illuminate\Contracts\Routing\UrlGenerator;
+use Illuminate\Http\Request;
+
 class CurrentActionUrlProvider implements ActionUrlProviderInterface{
+
+    /**
+     * @var \Illuminate\Contracts\Routing\UrlGenerator
+    **/
+    protected $urlGenerator;
+
+    /**
+     * @var \Illuminate\Http\Request
+    **/
+    protected $request;
+
+    /**
+     * @param \Illuminate\Contracts\Routing\UrlGenerator $generator
+     * @param \Illuminate\Http\Request $request
+     **/
+    public function __construct(UrlGenerator $generator, Request $request)
+    {
+        $this->urlGenerator = $generator;
+        $this->request = $request;
+    }
 
     /**
      * This method returns a default action where to send the form if none was
@@ -14,8 +35,9 @@ class CurrentActionUrlProvider implements ActionUrlProviderInterface{
      * @param \FormObject\Form $form
      * @return string
      **/
-    public function setActionUrl(Form $form){
-        $form->setAction(URL::current());
+    public function setActionUrl(Form $form)
+    {
+        $form->setAction($this->currentUrl());
     }
 
     /**
@@ -25,8 +47,17 @@ class CurrentActionUrlProvider implements ActionUrlProviderInterface{
      * @param \FormObject\Form $form
      * @return bool
      **/
-    public function matches(Form $form){
+    public function matches(Form $form)
+    {
         return TRUE;
+    }
+
+    /**
+     * Returns the current Url
+     *
+     **/
+    public function currentUrl(){
+        return $this->urlGenerator->to($this->request->getPathInfo());
     }
 
 }

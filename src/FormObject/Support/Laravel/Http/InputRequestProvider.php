@@ -1,18 +1,29 @@
 <?php namespace FormObject\Support\Laravel\Http;
 
-use Input;
+use Illuminate\Http\Request;
 
 use FormObject\Http\RequestProviderInterface;
 
 class InputRequestProvider implements RequestProviderInterface{
 
-     public function getRequestAsArray($method){
+    /**
+     * @var \Illuminate\Http\Request
+     **/
+    protected $request;
 
-        if($old = Input::old()){
+    public function __construct(Request $request)
+    {
+        $this->request = $request;
+    }
+
+    public function getRequestAsArray($method)
+    {
+
+        if($old = $this->request->old()){
             $data = $old;
         }
         else{
-            $data = Input::all();
+            $data = $this->request->all();
         }
 
         return $data;
