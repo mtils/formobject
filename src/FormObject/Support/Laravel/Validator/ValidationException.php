@@ -1,10 +1,10 @@
 <?php namespace FormObject\Support\Laravel\Validator;
 
-use Illuminate\Support\Contracts\MessageProviderInterface;
+use Illuminate\Contracts\Support\MessageProvider;
 use Illuminate\Support\MessageBag;
 use RuntimeException;
 
-class ValidationException extends RuntimeException implements MessageProviderInterface{
+class ValidationException extends RuntimeException implements MessageProvider{
 
     protected $messages;
 
