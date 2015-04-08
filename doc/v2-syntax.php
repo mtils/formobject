@@ -1,5 +1,13 @@
 <?php
 
+// V2 will remove validation completely, setting values to forms will be pluggable
+
+// Form::setRequest() will be optional but supported
+// Form::setModel($someModel) will pass this to a handler $handler->fill(Form $form, $model)
+
+?>
+
+
 // Simple form (bootstrap.php)
 
 <? $form = Form::create('name')->setRules($rules) ?>
@@ -24,4 +32,5 @@
 
 <?= $form ?>
 
-// 
+// No more forced controller usage
+
