@@ -1,9 +1,11 @@
 <?php namespace FormObject\Renderer;
 
+
 use \FormObject\FormItem;
 use \ReflectionClass;
 
-abstract class TemplateLoaderAbstract{
+abstract class TemplateLoaderAbstract
+{
 
     protected $paths = array();
 

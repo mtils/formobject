@@ -36,7 +36,7 @@ class PhpRenderer implements RendererInterface{
         return $this->templateLoader;
     }
 
-    public function setTemplateLoader(TemplateLoaderAbstract $loader){
+    public function setTemplateLoader(callable $loader){
         $this->templateLoader = $loader;
         return $this;
     }

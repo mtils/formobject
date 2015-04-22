@@ -1,8 +1,11 @@
 <?php namespace FormObject\Support\Laravel;
 
+
+use Signal\Support\Laravel\IlluminateBus;
+
 use Illuminate\Support\ServiceProvider;
 
-use FormObject\Renderer\PhpRenderer;
+use FormObject\Renderer\RendererInterface;
 use FormObject\Http\ActionUrlProviderChain;
 use FormObject\Form;
 use FormObject\Field\HiddenField;
@@ -12,10 +15,9 @@ use FormObject\Support\Laravel\Http\CurrentActionUrlProvider;
 use FormObject\Support\Laravel\Http\ResourceActionUrlProvider;
 
 use FormObject\Support\Laravel\Validator\Factory;
-use FormObject\Support\Laravel\Event\Dispatcher;
-use Config;
 
-class FormObjectServiceProvider extends ServiceProvider {
+class FormObjectServiceProvider extends ServiceProvider
+{
 
     /**
         * Register the service provider.
@@ -25,39 +27,78 @@ class FormObjectServiceProvider extends ServiceProvider {
     public function register()
     {
 
-        $renderer = new PhpRenderer();
+        Form::setStaticEventBus(new IlluminateBus($this->app['events']));
 
-        if($paths = $this->app['config']->get('view.formpaths')){
-            foreach($paths as $path){
-                $renderer->addPath($path);
-            }
-        }
+        $this->app['events']->listen('form.requestprovider-requested', function() {
+            return $this->getRequestProvider();
+        });
 
-        Form::setRenderer($renderer);
+        $this->app['events']->listen('form.validatorFactory-requested', function() {
+            return $this->getValidatorFactory();
+        });
 
-        Form::setEventDispatcher(new Dispatcher($this->app['events']));
+        $this->app['events']->listen('form.urlprovider-requested', function() {
+            return $this->getActionUrlProvider();
+        });
+
+        $this->app['events']->listen('form.renderer-requested', function() {
+            return $this->getRenderer();
+        });
+
+        $this->app['events']->listen('form.renderer-changed', function($renderer) {
+            $this->addFormPaths($renderer);
+        });
 
     }
 
-    public function boot(){
+    public function getValidatorFactory()
+    {
+        return new Factory;
+    }
+
+    public function getActionUrlProvider()
+    {
 
         $chain = new ActionUrlProviderChain();
-        Form::setActionUrlProvider($chain);
 
         $currentUrlProvider = new CurrentActionUrlProvider(
             $this->app['url'],
             $this->app['request']
         );
-
         $chain->add($currentUrlProvider);
+
         $chain->add(new ResourceActionUrlProvider(
             $currentUrlProvider,
             $this->app['router'])
         );
 
-        Form::setRequestProvider(new InputRequestProvider($this->app['request']));
+        return $chain;
 
-        Form::setValidatorFactory(new Factory);
+    }
+
+    public function getRequestProvider()
+    {
+        return new InputRequestProvider($this->app['request']);
+    }
+
+    public function getRenderer()
+    {
+        return $this->app->make('FormObject\Renderer\PhpRenderer');
+    }
+
+    public function addFormPaths(RendererInterface $renderer)
+    {
+        if(!$paths = $this->app['config']->get('view.formpaths')){
+            return;
+        }
+
+        foreach($paths as $path){
+            $renderer->addPath($path);
+        }
+
+    }
+
+    public function boot(){
 
         Form::addFormModifier( function(Form $form){
 

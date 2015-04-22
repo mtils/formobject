@@ -1,17 +1,16 @@
-<?php
+<?php namespace FormObject;
 
-namespace FormObject;
-
+use InvalidArgumentException;
 use ArrayAccess;
 use ReflectionClass;
 
+use Signal\NamedEvent\BusHolderTrait;
+
 use FormObject\Field\Action;
-use FormObject\Field\HiddenField;
 
 use FormObject\Validator\ValidatorInterface;
 use FormObject\Validator\FactoryInterface;
 use FormObject\Validator\SimpleFactory;
-use FormObject\Validator\SimpleValidator;
 
 use FormObject\Http\ActionUrlProviderInterface;
 use FormObject\Http\RequestUriActionUrlProvider;
@@ -21,10 +20,10 @@ use FormObject\Http\GlobalsRequestProvider;
 use FormObject\Renderer\RendererInterface;
 use FormObject\Renderer\PhpRenderer;
 
-use FormObject\Event\DispatcherInterface;
-use FormObject\Event\Dispatcher;
+class Form extends FormItem implements ArrayAccess
+{
 
-class Form extends FormItem implements ArrayAccess{
+    use BusHolderTrait;
 
     const GET = 'get';
 
@@ -42,7 +41,7 @@ class Form extends FormItem implements ArrayAccess{
 
     protected static $requestProvider;
 
-    protected static $eventDispatcher;
+    protected static $staticEventBus;
 
     protected static $formModifiers = [];
 
@@ -90,10 +89,6 @@ class Form extends FormItem implements ArrayAccess{
     * @var string
     */
     protected $encType = '';
-
-    protected function getEventSuffix(){
-        return $this->getName();
-    }
 
     public function getFields(){
 
@@ -482,6 +477,16 @@ class Form extends FormItem implements ArrayAccess{
         return $data;
     }
 
+    protected function getEventSuffix()
+    {
+        return $this->getName();
+    }
+
+    protected function fireEvent($eventPrefix, array $params){
+        $eventName = $eventPrefix . '.' . $this->getEventSuffix();
+        $this->fire($eventName, $params);
+    }
+
     public function getSelectedAction(){
         if($this->wasSubmitted()){
             foreach($this->getActions() as $action){
@@ -576,9 +581,17 @@ class Form extends FormItem implements ArrayAccess{
     }
 
     public static function getActionUrlProvider(){
-        if(!static::$defaultActionProvider){
-            static::$defaultActionProvider = new RequestUriActionUrlProvider;
+
+        if(static::$defaultActionProvider){
+           return static::$defaultActionProvider;
         }
+
+        if (!$provider = static::getFromListener('form.urlprovider-requested')) {
+            $provider = new RequestUriActionUrlProvider();
+        }
+
+        static::setActionUrlProvider($provider);
+
         return static::$defaultActionProvider;
     }
 
@@ -586,22 +599,43 @@ class Form extends FormItem implements ArrayAccess{
         static::$defaultActionProvider = $provider;
     }
 
-    public static function getRenderer(){
-        if(!static::$renderer){
-            static::$renderer = new PhpRenderer();
+    public static function getRenderer()
+    {
+
+        if(static::$renderer){
+            return static::$renderer;
         }
+
+        if (!$renderer = static::getFromListener('form.renderer-requested')) {
+            $renderer = new PhpRenderer();
+        }
+
+        static::setRenderer($renderer);
+
         return static::$renderer;
     }
 
     public static function setRenderer(RendererInterface $renderer){
+
         static::$renderer = $renderer;
+        static::fireStatic('form.renderer-changed', $renderer);
+
     }
 
     public static function getValidatorFactory(){
-        if(!static::$validatorFactory){
-            static::$validatorFactory= new SimpleFactory();
+
+        if(static::$validatorFactory){
+            return static::$validatorFactory;
         }
+
+        if (!$factory = static::getFromListener('form.validatorFactory-requested')) {
+            $factory = new SimpleFactory;
+        }
+
+        static::setValidatorFactory($factory);
+
         return static::$validatorFactory;
+
     }
 
     public static function setValidatorFactory(FactoryInterface $factory){
@@ -609,32 +643,23 @@ class Form extends FormItem implements ArrayAccess{
     }
 
     public static function getRequestProvider(){
-        if(!static::$requestProvider){
-            static::$requestProvider = new GlobalsRequestProvider();
+
+        if(static::$requestProvider){
+            return static::$requestProvider;
         }
+
+        if (!$provider = static::getFromListener('form.requestprovider-requested')) {
+            $provider = new GlobalsRequestProvider;
+        }
+
+        static::setRequestProvider($provider);
+
         return static::$requestProvider;
+
     }
 
     public static function setRequestProvider(RequestProviderInterface $provider){
         static::$requestProvider = $provider;
-    }
-
-    public static function getEventDispatcher(){
-
-        if(!static::$eventDispatcher){
-            static::$eventDispatcher = new Dispatcher();
-        }
-        return static::$eventDispatcher;
-
-    }
-
-    public static function setEventDispatcher(DispatcherInterface $dispatcher){
-        static::$eventDispatcher = $dispatcher;
-    }
-
-    protected function fireEvent($eventPrefix, array $params){
-        $eventName = $eventPrefix . '.' . $this->getEventSuffix();
-        static::getEventDispatcher()->fire($eventName, $params);
     }
 
     public static function addFormModifier($modifier){
@@ -649,4 +674,23 @@ class Form extends FormItem implements ArrayAccess{
             $modifier($form);
         }
     }
+
+    protected static function getFromListener($event)
+    {
+
+        if (!isset(static::$staticEventBus)) {
+            return;
+        }
+
+        return static::$staticEventBus->fire($event, null, true);
+
+    }
+
+    protected static function fireStatic($event, $args)
+    {
+        if (isset(static::$staticEventBus)) {
+            static::$staticEventBus->fire($event, $args);
+        }
+    }
+
 }
