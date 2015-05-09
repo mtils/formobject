@@ -3,8 +3,9 @@
 use Illuminate\Contracts\Support\MessageProvider;
 use Illuminate\Support\MessageBag;
 use RuntimeException;
+use FormObject\Validator\ValidationException as BaseException;
 
-class ValidationException extends RuntimeException implements MessageProvider{
+class ValidationException extends BaseException implements MessageProvider{
 
     protected $messages;
 

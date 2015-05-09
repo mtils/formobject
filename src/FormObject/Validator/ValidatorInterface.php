@@ -48,4 +48,6 @@ interface ValidatorInterface{
      **/
     public function getRuleNames($fieldName);
 
+    public function createValidationException();
+
 }

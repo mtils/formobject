@@ -15,13 +15,22 @@ class TemplateLoader extends TemplateLoaderAbstract{
 
         $classHierarchy = self::getClassHierachy($item);
 
+        $itemClass = $classHierarchy[0];
+
         foreach($this->paths as $path){
-            foreach(self::getClassHierachy($item) as $class){
-                $fileName = self::phpClassNameToTemplateName($class,
-                                                             $this->fileSuffix,
-                                                             $this->filePrefix);
-                $filePath = "$path$fileName";
-                if(file_exists($filePath)){
+
+            // If a custom classname was set, first try a direct hit of it
+             if ($itemClass != $pseudoClass) {
+                if ($filePath = $this->getExistingPathForClass($path, $pseudoClass)) {
+                    $this->cache[$pseudoClass] = $filePath;
+                    return $filePath;
+                } 
+             }
+
+            // If not iterate through the class hierarchy from top to bottom
+            foreach($classHierarchy as $class){
+
+                if ($filePath = $this->getExistingPathForClass($path, $class)) {
                     $this->cache[$pseudoClass] = $filePath;
                     return $filePath;
                 }
@@ -29,5 +38,20 @@ class TemplateLoader extends TemplateLoaderAbstract{
         }
         // No Exceptions inside __toString
         trigger_error("No template for FormItem '$pseudoClass' found", E_USER_ERROR);
+    }
+
+    protected function getExistingPathForClass($path, $baseClassName) {
+
+        $fileName = self::phpClassNameToTemplateName(
+            $baseClassName,
+            $this->fileSuffix,
+            $this->filePrefix
+        );
+
+        $filePath = "$path$fileName";
+
+        if(file_exists($filePath)){
+            return $filePath;
+        }
     }
 }

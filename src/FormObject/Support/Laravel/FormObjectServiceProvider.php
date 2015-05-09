@@ -9,12 +9,12 @@ use FormObject\Renderer\RendererInterface;
 use FormObject\Http\ActionUrlProviderChain;
 use FormObject\Form;
 use FormObject\Field\HiddenField;
+use FormObject\Support\Laravel\Validator\Factory as ValidatorFactory;
+use FormObject\Support\LegacyFormObject\Validation\AutoValidatorBroker;
 
 use FormObject\Support\Laravel\Http\InputRequestProvider;
 use FormObject\Support\Laravel\Http\CurrentActionUrlProvider;
 use FormObject\Support\Laravel\Http\ResourceActionUrlProvider;
-
-use FormObject\Support\Laravel\Validator\Factory;
 
 class FormObjectServiceProvider extends ServiceProvider
 {
@@ -29,19 +29,24 @@ class FormObjectServiceProvider extends ServiceProvider
 
         Form::setStaticEventBus(new IlluminateBus($this->app['events']));
 
-        $this->app['events']->listen('form.requestprovider-requested', function() {
+        Form::provideValidationBroker(function(Form $form){
+
+            $broker = new AutoValidatorBroker(new ValidatorFactory());
+            $broker->setForm($form);
+            return $broker;
+
+        });
+
+        Form::provideRequestProvider(function(){
             return $this->getRequestProvider();
         });
 
-        $this->app['events']->listen('form.validatorFactory-requested', function() {
-            return $this->getValidatorFactory();
-        });
 
-        $this->app['events']->listen('form.urlprovider-requested', function() {
+        Form::provideUrlProvider(function(){
             return $this->getActionUrlProvider();
         });
 
-        $this->app['events']->listen('form.renderer-requested', function() {
+        Form::provideRenderer(function(){
             return $this->getRenderer();
         });
 
@@ -49,11 +54,6 @@ class FormObjectServiceProvider extends ServiceProvider
             $this->addFormPaths($renderer);
         });
 
-    }
-
-    public function getValidatorFactory()
-    {
-        return new Factory;
     }
 
     public function getActionUrlProvider()

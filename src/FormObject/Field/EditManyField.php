@@ -12,7 +12,6 @@ use Iterator;
 use ArrayAccess;
 use BadMethodCallException;
 use DomainException;
-use FormObject\Validator\ProxyValidator;
 
 class EditManyField extends Field implements Iterator, ArrayAccess{
 
@@ -30,7 +29,11 @@ class EditManyField extends Field implements Iterator, ArrayAccess{
 
     protected $itemForms;
 
-   public function getItemForm(){
+    protected $addItemTitle = 'Hinzufügen...';
+
+    protected $removeItemTitle = 'Löschen';
+
+    public function getItemForm(){
         return $this->itemForm;
     }
 
@@ -44,9 +47,6 @@ class EditManyField extends Field implements Iterator, ArrayAccess{
     }
 
     public function isValid(){
-        if(!$this->form->needsValidation()){
-            return TRUE;
-        }
 
         if($this->valid === NULL){
             $valid = TRUE;
@@ -96,14 +96,10 @@ class EditManyField extends Field implements Iterator, ArrayAccess{
 
     public function rewind(){
         $this->iteratorPosition = 0;
-//         print_r($this->value); die();
     }
 
     public function current(){
-        if($this->currentForm === NULL){
-            $this->currentForm = $this->createForm($this->iteratorPosition);
-        }
-        return $this->currentForm;
+        return $this->createForm($this->iteratorPosition);
     }
 
     public function key(){
@@ -123,23 +119,32 @@ class EditManyField extends Field implements Iterator, ArrayAccess{
         return TRUE;
     }
 
+    public function getAttributeTitles()
+    {
+        $titles = [$this->getName()=>$this->getTitle()];
+
+        foreach($this as $idx=>$itemForm) {
+            foreach ($itemForm->dataFields as $dataField) {
+                $titles = array_merge($titles, $dataField->getAttributeTitles());
+            }
+        }
+        return $titles;
+    }
+
+    public function formTemplate()
+    {
+        return $this->createForm('x');
+    }
+
     protected function createForm($idx){
 
         if(!$this->itemForm){
             throw new DomainException("Assign a itemForm via setItemForm before using EditManyField");
         }
 
-        $this->itemForm->forceValidation();
-
         $itemForm = $this->itemForm->copy();
 
         $itemForm->setName($this->getName()."_{$idx}");
-
-        $srcValidator = $this->itemForm->getValidator();
-
-        $proxyValidator = new ProxyValidator($itemForm, $srcValidator);
-
-        $itemForm->setValidator($proxyValidator);
 
         $values = array();
 
@@ -147,35 +152,26 @@ class EditManyField extends Field implements Iterator, ArrayAccess{
 
             $fieldName = $field->getName();
 
-            if($this->columns){
-                if(!in_array($fieldName, $this->columns)){
-                    continue;
-                }
+            if($this->columns && !in_array($fieldName, $this->columns)){
+                continue;
             }
 
             $copy = $field->copy();
-            $fieldName = $field->getName();
-            $newFieldName = $this->name . "[$this->iteratorPosition][$fieldName]";
-
-            $proxyValidator->map($fieldName, $newFieldName);
+            $newFieldName = $this->name . "[$idx][$fieldName]";
 
             $copy->setName($newFieldName);
 
-            if(isset($this->value[$this->iteratorPosition]) && isset($this->value[$this->iteratorPosition][$fieldName])){
-                $values[$newFieldName] = $this->value[$this->iteratorPosition][$fieldName];
+            if(isset($this->value[$idx]) && isset($this->value[$idx][$fieldName])){
+                $values[$newFieldName] = $this->value[$idx][$fieldName];
             }
 
             $itemForm->fields->push($copy);
         }
 
         if($form = $this->getForm()){
+            $itemForm->setValidationBroker($form->getValidationBroker());
             if($form->wasSubmitted()){
-
-                // Fake a Form submit
-                foreach($itemForm->actions as $action){
-                    $values[$action->getAction()] = $action->getValue();
-                    break;
-                }
+                $itemForm->fakeSubmit();
                 $itemForm->fillByRequestArray($values);
             }
             else{
@@ -216,4 +212,31 @@ class EditManyField extends Field implements Iterator, ArrayAccess{
         
     }
 
+    public function getAddItemTitle()
+    {
+        return $this->addItemTitle;
+    }
+
+    public function setAddItemTitle($title)
+    {
+        $this->addItemTitle = $title;
+        return $this;
+    }
+
+    public function getRemoveItemTitle()
+    {
+        return $this->removeItemTitle;
+    }
+
+    public function setRemoveItemTitle($title)
+    {
+        $this->removeItemTitle = $title;
+        return $this;
+    }
+
+    public function __toString_()
+    {
+        $res = parent::__toString();
+        die('Karpotten');
+    }
 }

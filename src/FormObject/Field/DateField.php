@@ -4,7 +4,7 @@ namespace FormObject\Field;
 use FormObject\Field;
 use FormObject\Attributes;
 
-class TextField extends Field{
+class DateField extends Field{
 
     public $multiLine = FALSE;
 

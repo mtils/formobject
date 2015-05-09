@@ -15,6 +15,8 @@ class SelectManyField extends Field implements Selectable{
 
     protected $columns;
 
+    protected $grouper;
+
     public function __construct($name=NULL, $title=NULL){
         parent::__construct($name, $title);
 
@@ -33,6 +35,24 @@ class SelectManyField extends Field implements Selectable{
             $this->columns = ColumnList::fromArray($columns);
         }
         return $this;
+    }
+
+    public function getGrouper(){
+        return $this->grouper;
+    }
+
+    public function setGrouper($grouper){
+        $this->grouper = $grouper;
+        $this->grouper->setSelectField($this);
+        return $this;
+    }
+
+    public function hasGroups(){
+        return ($this->grouper instanceof OptionGrouper);
+    }
+
+    public function getGrouped(){
+        return $this->grouper->getGrouped();
     }
 
     public function updateAttributes(Attributes $attributes){

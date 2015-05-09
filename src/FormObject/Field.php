@@ -21,13 +21,6 @@ class Field extends FormItem{
 
     protected $ruleClassesAdded = FALSE;
 
-    /**
-    * @brief The field validator
-    * @var Validator
-    * 
-    */
-    protected $validator = NULL;
-
     public function __construct($name=NULL, $title=NULL){
 
         if($name !== NULL){
@@ -38,18 +31,6 @@ class Field extends FormItem{
             $this->setTitle($title);
         }
     }
-
-    public function initCssClasses(){
-        parent::initCssClasses();
-        if(!$this->ruleClassesAdded && $this->form){
-            foreach($this->form->getValidator()->getRuleNames($this->name) as $ruleName){
-                $this->cssClasses->append($ruleName);
-            }
-            $this->ruleClassesAdded = TRUE;
-        }
-        return $this->cssClasses;
-    }
-
 
     public function getId(){
         if(!$this->id){
@@ -122,19 +103,16 @@ class Field extends FormItem{
     }
 
     public function isValid(){
-        if(!$this->form->needsValidation()){
-            return TRUE;
-        }
 
         if($this->valid === NULL){
-            $this->valid = !$this->form->getValidator()->hasErrors($this->name);
+            $this->valid = !$this->form->hasErrors($this->name);
         }
 
         return $this->valid;
     }
 
     public function getMessages(){
-        return $this->form->getValidator()->getMessages($this->name);
+        return $this->form->getErrors($this->name);
     }
 
     /**
@@ -153,6 +131,7 @@ class Field extends FormItem{
     public function __toString(){
 
         try{
+            $this->addRuleCssClassesIfNotAdded();
             return $this->form->getRenderer()->renderFormItem($this);
         }
         // No exceptions inside __toString
@@ -189,6 +168,21 @@ class Field extends FormItem{
 
     }
 
+    public function isPrefixed()
+    {
+        $prefixPos = mb_strpos($this->getName(), '__');
+        return (is_int($prefixPos) && $prefixPos > 0);
+    }
+
+    public function hasPrefix($prefix=null)
+    {
+        if ($prefix === null) {
+            return $this->isPrefixed();
+        }
+
+        return ($this->getPrefix() == $prefix);
+    }
+
     public function getPrefixAndName(){
 
         $tiled = explode('__', $this->getName());
@@ -203,6 +197,21 @@ class Field extends FormItem{
         }
         return [$prefix, $name];
 
+    }
+
+    public function getAttributeTitles()
+    {
+        return [$this->getName()=>$this->getTitle()];
+    }
+
+    protected function addRuleCssClassesIfNotAdded()
+    {
+        if(!$this->ruleClassesAdded && $this->form){
+            foreach($this->form->getRuleNames($this->name) as $ruleName){
+                $this->getCssClasses()->append($ruleName);
+            }
+            $this->ruleClassesAdded = TRUE;
+        }
     }
 
 }

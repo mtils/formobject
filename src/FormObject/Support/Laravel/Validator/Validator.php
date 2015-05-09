@@ -29,16 +29,15 @@ class Validator implements ValidatorInterface{
 
     public function validate(array $data){
 
-        $this->getSrcValidator()->setData($data);
+        $srcValidator = $this->getSrcValidator();
+
+        $srcValidator->setRules($this->getParsedRules($data));
+        $srcValidator->setAttributeNames($this->buildAttributeNames($this->form));
+        $srcValidator->setData($data);
 
         // This starts Laravels validating
-        $res = $this->getSrcValidator()->passes();
+        $res = $srcValidator->passes();
         $this->validated = TRUE;
-
-        if($this->throwExceptions && !$res){
-            $exception = $this->createValidationException($this->getSrcValidator());
-            throw $exception;
-        }
 
         return $res;
     }
@@ -54,18 +53,28 @@ class Validator implements ValidatorInterface{
 
     public function setSrcValidator(LaravelValidator $srcValidator){
 
-        $srcValidator->setAttributeNames($this->buildAttributeNames($this->form));
         $this->srcValidator = $srcValidator;
 
         return $this;
     }
 
     public function hasErrors($fieldName){
-        return (bool)count($this->getMessageBag()->get($fieldName));
+        return (bool)count($this->getMessageBag()->get($this->fieldNameToMessageKey($fieldName)));
     }
 
     public function getMessages($fieldName){
-        return $this->getMessageBag()->get($fieldName);
+        return $this->getMessageBag()->get($this->fieldNameToMessageKey($fieldName));
+    }
+
+    protected function fieldNameToRuleKey($fieldName)
+    {
+        return preg_replace('/\.[0-9]\./u', '.*.', $this->fieldNameToMessageKey($fieldName));
+    }
+
+    protected function fieldNameToMessageKey($fieldName)
+    {
+        $multiDotted = str_replace(['[',']'],['.','.'],$fieldName);
+        return trim(str_replace('..','.',$multiDotted), '.');
     }
 
     protected function getMessageBag(){
@@ -76,7 +85,7 @@ class Validator implements ValidatorInterface{
             }
         }
 
-        if($this->form->needsValidation()){
+        if($this->form->wasSubmitted()){
             if(!$this->validated){
                 $this->validate($this->form->data);
             }
@@ -89,8 +98,8 @@ class Validator implements ValidatorInterface{
 
     }
 
-    public function createValidationException($srcValidator){
-        if($messages = $srcValidator->messages()){
+    public function createValidationException(){
+        if($messages = $this->getSrcValidator()->messages()){
             return new ValidationException($messages);
         }
     }
@@ -99,7 +108,11 @@ class Validator implements ValidatorInterface{
 
         $ruleNames = array();
 
-        foreach($this->getSrcValidator()->getRules() as $key=>$rules){
+        $fieldName = $this->fieldNameToRuleKey($fieldName);
+
+        foreach($this->getRules() as $key=>$rules){
+            $rules = $this->explodeRule($rules);
+
             if($key == $fieldName){
                 foreach($rules as $rule){
                     $ruleNames[] = $this->ruleToName($rule);
@@ -107,7 +120,19 @@ class Validator implements ValidatorInterface{
                 break;
             }
         }
+
         return $ruleNames;
+    }
+
+    /**
+     * Explode the rules into an array of rules.
+     *
+     * @param  string|array  $rules
+     * @return array
+     */
+    protected function explodeRule($rule)
+    {
+        return (is_string($rule)) ? explode('|', $rule) : $rule;
     }
 
     protected function ruleToName($rule){
@@ -115,15 +140,51 @@ class Validator implements ValidatorInterface{
     }
 
     protected function buildAttributeNames($form){
+
         $attributeNames = array();
-        foreach($form->getDataFields() as $field){
-            $attributeNames[$field->getName()] = $field->getTitle();
+
+        foreach ($form->getDataFields() as $field){
+            foreach ($field->getAttributeTitles() as $name=>$title) {
+                $attributeNames[$this->fieldNameToMessageKey($name)] = $title;
+            }
         }
+
         return $attributeNames;
     }
 
     public function getRules(){
         return $this->rules;
+    }
+
+    public function getParsedRules($data)
+    {
+
+        $rules = $this->getRules();
+
+        $parsedRules = [];
+
+        foreach ($rules as $fieldName=>$policy) {
+
+            if (!$this->isResizableFieldName($fieldName)) {
+                $parsedRules[$fieldName] = $policy;
+                continue;
+            }
+
+            list($key, $subKey) = explode('.*.', $fieldName);
+
+            if (!isset($data[$key]) || !is_array($data[$key])) {
+                continue;
+            }
+
+            foreach ($data[$key] as $idx=>$val) {
+                $keyName = "$key.$idx.$subKey";
+                $parsedRules[$keyName] = $policy;
+            }
+
+        }
+
+        return $parsedRules;
+
     }
 
     public function setRules(array $rules){
@@ -161,6 +222,11 @@ class Validator implements ValidatorInterface{
 
     public function forceExceptions($force=TRUE){
         $this->throwExceptions = $force;
+    }
+
+    protected function isResizableFieldName($fieldName)
+    {
+        return (bool)strpos($fieldName, '.*.');
     }
 
 } 

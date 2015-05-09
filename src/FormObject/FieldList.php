@@ -38,6 +38,30 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
         return $this;
     }
 
+    public function isTabBar()
+    {
+        return $this->hasSwitchableChildren();
+    }
+
+    public function hasSwitchableChildren()
+    {
+
+        foreach ($this->fieldLists() as $fieldList) {
+            if ($fieldList->isSwitchable() && $fieldList->getClassName() != 'SelectOneGroup') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function getClassName(){
+        if ($this->isTabBar()) {
+            return 'SwitchableFieldList';
+        }
+        return parent::getClassName();
+    }
+
     public function setForm(Form $form){
         $this->form = $form;
         foreach($this->fields as $field){
@@ -144,6 +168,11 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
             }
         }
         return $lists;
+    }
+
+    public function hasFieldLists()
+    {
+        return (bool)$this->fieldLists();
     }
 
     public function findDataField($name){
@@ -321,5 +350,17 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
             }
         }
         return FALSE;
+    }
+
+    public function parentIsFieldList()
+    {
+        return ($this->getParent() instanceof self);
+    }
+
+    public function first(){
+        if(!isset($this->keyOrder[0])){
+            return;
+        }
+        return $this->get($this->keyOrder[0]);
     }
 }

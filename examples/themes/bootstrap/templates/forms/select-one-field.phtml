@@ -1,22 +1,24 @@
     <div class="form-group<? if(!$item->isValid()) echo ' has-error'; ?>">
+
         <? if(!$item->hasCssClass('no-label')): ?>
-        <label class="control-label" for="<?=$item->id ?>"><?=$item->title ?></label>
+            <label class="control-label" for="<?=$item->id ?>"><?=$item->title ?></label>
         <? endif ?>
+
         <? if($item->className == 'SelectOneField'): ?>
             <select <?=$item->addCssClass('form-control')->attributes?>>
-            <? if($item->hasGroups()): ?>
-            <? foreach($item->getGrouped() as $group=>$options): ?>
-                <optgroup label="<?= $group ?>">
-                <? foreach($options as $option): ?>
-                    <option value="<?= $option->key ?>"<?= $option->selected ? ' selected="selected"' : '' ?>><?= $option ?></option>
-                <? endforeach ?>
-                </optgroup>
-            <? endforeach ?>
-            <? else: ?>
-            <? foreach($item as $option): ?>
-            <option value="<?= $option->key ?>"<?= $option->selected ? ' selected="selected"' : '' ?>><?= $option ?></option>
-            <? endforeach ?>
-            <? endif ?>
+                <? if($item->hasGroups()): ?>
+                    <? foreach($item->getGrouped() as $group=>$options): ?>
+                        <optgroup label="<?= $group ?>">
+                        <? foreach($options as $option): ?>
+                            <option value="<?= $option->key ?>"<?= $option->selected ? ' selected="selected"' : '' ?>><?= $option ?></option>
+                        <? endforeach ?>
+                        </optgroup>
+                    <? endforeach ?>
+                <? else: ?>
+                    <? foreach($item as $option): ?>
+                        <option value="<?= $option->key ?>"<?= $option->selected ? ' selected="selected"' : '' ?>><?= $option ?></option>
+                    <? endforeach ?>
+                <? endif ?>
             </select>
         <? elseif($item->className == 'RadioButtonsField'): ?>
             <? foreach($item as $option): ?>
@@ -26,10 +28,10 @@
             <? endforeach ?>
         <? endif ?>
         <? if(!$item->isValid()): ?>
-        <? foreach($item->messages as $error): ?>
-        <span class="help-inline"><?= $error ?></span>
-        <? endforeach ?>
+            <? foreach($item->messages as $error): ?>
+                <span class="help-inline"><?= $error ?></span>
+            <? endforeach ?>
         <? elseif($item->description): ?>
-        <span class="help-inline"><?= $item-description ?></span>
+                <span class="help-inline"><?= $item-description ?></span>
         <? endif ?>
     </div>

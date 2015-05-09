@@ -8,9 +8,8 @@ use Signal\NamedEvent\BusHolderTrait;
 
 use FormObject\Field\Action;
 
-use FormObject\Validator\ValidatorInterface;
-use FormObject\Validator\FactoryInterface;
-use FormObject\Validator\SimpleFactory;
+use FormObject\Validation\BrokerInterface;
+use FormObject\Validation\GenericBroker;
 
 use FormObject\Http\ActionUrlProviderInterface;
 use FormObject\Http\RequestUriActionUrlProvider;
@@ -37,7 +36,13 @@ class Form extends FormItem implements ArrayAccess
 
     protected static $renderer;
 
-    protected static $validatorFactory;
+    protected static $validationBrokerCreator;
+
+    protected static $requestProviderCreator;
+
+    protected static $actionUrlProviderCreator;
+
+    protected static $rendererCreator;
 
     protected static $requestProvider;
 
@@ -57,6 +62,12 @@ class Form extends FormItem implements ArrayAccess
     */
     public $_actions = NULL;
 
+    /**
+     * Holds all request params as an array
+     *
+     * @var array
+     **/
+    protected $requestArray;
 
     protected $action = '';
 
@@ -64,25 +75,15 @@ class Form extends FormItem implements ArrayAccess
 
     protected $verb;
 
-    protected $_needsValidation = NULL;
+    protected $actionsSetted = false;
 
     protected $_wasSubmitted = NULL;
 
     protected $dataOrigin;
 
-    protected $validator = NULL;
-
-    protected $autoRedirectOnPost = FALSE;
-
-    protected $appendCsrfToken = FALSE;
-
-    protected $autoFillByRequest = FALSE;
+    protected $validationBroker;
 
     protected $_ignoreFillIfSubmitted = TRUE;
-
-    protected $_throwValidationErrors = TRUE;
-
-    protected $_autoValidated = FALSE;
 
     /**
     * @brief multipart/form-data
@@ -142,6 +143,8 @@ class Form extends FormItem implements ArrayAccess
 
         $this->fireEvent('form.actions-setted',[$this->_actions]);
 
+        $this->selectActions();
+
         return $this;
 
     }
@@ -155,28 +158,6 @@ class Form extends FormItem implements ArrayAccess
         return $actions;
     }
 
-    public function shouldAppendCsrfToken(){
-        return $this->appendCsrfToken;
-    }
-
-    public function setShouldAppendCsrfToken($should){
-        $this->appendCsrfToken = $should;
-        return $this;
-    }
-
-    public function isAutoRedirectOnPostEnabled(){
-        return $this->autoRedirectOnPost;
-    }
-
-    public function enableAutoRedirectOnPost($enabled=TRUE){
-        $this->autoRedirectOnPost = $enabled;
-        return $this;
-    }
-
-    public function disableAutoRedirectOnPost($disabled=TRUE){
-        return $this->enableAutoRedirectOnPost(!$disabled);
-    }
-
     protected function updateAttributes(Attributes $attributes){
         parent::updateAttributes($attributes);
         $attributes['method'] = $this->getMethod();
@@ -184,27 +165,35 @@ class Form extends FormItem implements ArrayAccess
         $attributes['action'] = $this->getAction();
     }
 
-    public function getValidator(){
+    public function getValidationBroker()
+    {
 
-        if(!$this->validator){
-
-            $validator = static::getValidatorFactory()->createValidator($this);
-
-            $this->setValidator($validator);
+        if (!$this->validationBroker) {
+            $this->validationBroker = static::createValidationBroker($this);
         }
 
-        return $this->validator;
+        return $this->validationBroker;
 
     }
 
-    public function setValidator(ValidatorInterface $validator){
-
-        $this->validator = $validator;
-
-        $this->fireEvent('form.validator-setted',[$validator]);
-
+    public function setValidationBroker(BrokerInterface $broker)
+    {
+        $this->validationBroker = $broker;
         return $this;
     }
+
+    public function getValidator(){
+
+        return $this->getValidationBroker()->getValidator();
+
+    }
+
+    public function setValidator($validator){
+
+        $this->getValidationBroker->setValidator($validator);
+        return $this;
+    }
+
 
     public function getDataOrigin(){
         return $this->dataOrigin;
@@ -242,7 +231,7 @@ class Form extends FormItem implements ArrayAccess
     }
 
     public function offsetGet($offset){
-        $this->performAutoValidation();
+        $this->getData();
         return $this->getFields()->offsetGet($offset);
     }
 
@@ -349,76 +338,87 @@ class Form extends FormItem implements ArrayAccess
             // If its explicit passed that no prefixes
             // should be concerned, skip all fields without
             // a prefix
-            if($prefix === FALSE || $prefix === ''){
-                if(mb_strpos($field->getName(), '__')){
-                    continue;
-                }
+            if ($this->isOnlyRootPrefix($prefix) && $field->isPrefixed()) {
+                continue;
             }
-            elseif($prefix){
 
-                $nameStart = "{$prefix}__";
+            // A prefix was passed
+            elseif($prefix !== NULL){
 
-                // If a prefix is passed, skip all fields without
-                // a prefix
-                if(mb_strpos($field->getName(), $nameStart) !== 0){
+                // Skip all fields without that prefix
+                if(!$field->hasPrefix($prefix)){
                     continue;
                 }
 
-                $dataKey = str_replace($nameStart, '', $field->getName());
+                // Prepend the prefix to fieldname and NOT prepend it to the
+                // array key
+                $arrayKey = str_replace("{$prefix}__", '', $field->getName());
             }
+
+            // No prefix was passed
             else{
-                $dataKey = $field->getName();
+                $arrayKey = $field->getName();
             }
 
-            if(isset($data[$dataKey])){
-                $field->setValue($data[$dataKey]);
+            if(isset($data[$arrayKey])){
+                $field->setValue($data[$arrayKey]);
             }
 
         }
-        $this->_needsValidation = FALSE;
         $this->dataOrigin = self::MANUAL;
     }
 
-    protected function doAutoFillByRequest(){
-        $this->fillByGlobals();
+    public function getErrors($fieldName=null)
+    {
+        return $this->getValidationBroker()->getErrors($fieldName);
+    }
+
+    public function hasErrors($fieldName=null)
+    {
+        return $this->getValidationBroker()->hasErrors($fieldName);
+    }
+
+    public function getRuleNames($fieldName)
+    {
+        return $this->getValidationBroker()->getRuleNames($fieldName);
+    }
+
+    protected function isOnlyRootPrefix($prefix)
+    {
+        return ($prefix === FALSE || $prefix === '' || $prefix === '.');
+    }
+
+    protected function getRequestArray()
+    {
+        if ($this->requestArray !== null) {
+            return $this->requestArray;
+        }
+
+        $this->requestArray = $this->getRequestProvider()->getRequestAsArray($this->getMethod());
+
+        return $this->requestArray;
+
     }
 
     public function fillByRequestArray($request=NULL){
 
-        if(is_null($request)){
-            $request = $this->getRequestProvider()->getRequestAsArray($this->getMethod());
+        if(!$this->wasSubmitted()){
+            return;
         }
 
-        $this->_wasSubmitted = FALSE;
-        foreach($this->getActions() as $action){
-            if(isset($request[$action->getAction()]) && $request[$action->getAction()] == $action->getValue()){
-                $action->setSelected(TRUE);
-                $this->_wasSubmitted = TRUE;
+        $request = $request ?: $this->getRequestArray();
+
+        foreach($this->getDataFields() as $field){
+            $fieldName = $field->getName();
+            if(isset($request[$fieldName])){
+                $field->setFromRequest($request[$fieldName]);
+            }
+            else{
+                $field->setFromRequest(NULL);
             }
         }
 
-        if($this->_wasSubmitted){
-            foreach($this->getDataFields() as $field){
-                $fieldName = $field->getName();
-                if(isset($request[$fieldName])){
-                    $field->setFromRequest($request[$fieldName]);
-                }
-                else{
-                    $field->setFromRequest(NULL);
-                }
-            }
-            $this->_needsValidation = TRUE;
-            $this->dataOrigin = self::REQUEST;
-        }
-    }
-
-    public function fillByGlobals(){
-        if($this->getMethod() == self::GET){
-            return $this->fillByRequestArray($_GET);
-        }
-        elseif($this->getMethod() == self::POST){
-            return $this->fillByRequestArray($_POST);
-        }
+        $this->dataOrigin = self::REQUEST;
     }
 
     public function getDataFields($prefix=NULL){
@@ -427,25 +427,19 @@ class Form extends FormItem implements ArrayAccess
 
     public function getData($prefix=NULL){
 
+        $this->fillByRequestArray();
+
         $this->performAutoValidation();
 
         return $this->collectData($prefix);
 
     }
 
-    protected function performAutoValidation(){
-
-        if(!$this->_autoValidated){
-
-            if($this->wasSubmitted()){
-
-                $this->getValidator()->validate($this->collectData());
-
-            }
-
-            $this->_autoValidated = TRUE;
+    protected function performAutoValidation()
+    {
+        if ($this->wasSubmitted()) {
+            $this->getValidationBroker()->check($this->collectData());
         }
-
     }
 
     protected function collectData($prefix=NULL){
@@ -454,30 +448,35 @@ class Form extends FormItem implements ArrayAccess
 
         foreach($this->getDataFields() as $field){
 
-            $fieldName = $field->getName();
+            try{
 
-            if($prefix !== NULL){
-                if($prefix === FALSE || $prefix === ''){
-                    if(mb_strpos($fieldName,'__') === FALSE){
-                        $data[$fieldName] = $field->getValue();
+                $fieldName = $field->getName();
+
+                if ($prefix !== NULL) {
+                    if ($this->isOnlyRootPrefix($prefix)) {
+                        if(!$field->isPrefixed()){
+                            $data[$fieldName] = $field->getValue();
+                        }
+                    }
+                    else{
+                        if(mb_strpos($fieldName,"{$prefix}__") !== FALSE){
+                            $cleaned = str_replace("{$prefix}__",'',$fieldName);
+                            $data[$cleaned] = $field->getValue();
+                        }
                     }
                 }
                 else{
-                    if(mb_strpos($fieldName,"{$prefix}__") !== FALSE){
-                        $cleaned = str_replace("{$prefix}__",'',$fieldName);
-                        $data[$cleaned] = $field->getValue();
-                    }
+                    $data[$fieldName] = $field->getValue();
                 }
-            }
-            else{
-                $data[$fieldName] = $field->getValue();
+
+            } catch (ValidationException $e) {
             }
         }
 
         return $data;
     }
 
-    protected function getEventSuffix()
+    public function getEventSuffix()
     {
         return $this->getName();
     }
@@ -488,11 +487,14 @@ class Form extends FormItem implements ArrayAccess
     }
 
     public function getSelectedAction(){
-        if($this->wasSubmitted()){
-            foreach($this->getActions() as $action){
-                if($action->isSelected()){
-                    return $action;
-                }
+
+        if (!$this->wasSubmitted()) {
+            return;
+        }
+
+        foreach($this->getActions() as $action) {
+            if($action->isSelected()){
+                return $action;
             }
         }
     }
@@ -500,30 +502,50 @@ class Form extends FormItem implements ArrayAccess
     public function isValid(){
         $valid = TRUE;
         foreach($this->getFields()->getDataFields() as $field){
-            if(!$field->isValid($field->getValue())){
+            if(!$field->isValid()){
                 $valid = FALSE;
             }
         }
         return $valid;
     }
 
-    public function needsValidation(){
-        if($this->_needsValidation === NULL){
-            $this->fillByRequestArray();
-        }
-        return $this->_needsValidation;
-    }
-
-    public function forceValidation(){
-        $this->_needsValidation = TRUE;
-        return $this;
-    }
-
     public function wasSubmitted(){
         if($this->_wasSubmitted === NULL){
-            $this->fillByRequestArray();
+            $this->_wasSubmitted = $this->checkIfSubmitted();
         }
         return $this->_wasSubmitted;
+    }
+
+    public function fakeSubmit()
+    {
+        $this->_wasSubmitted = true;
+    }
+
+    protected function checkIfSubmitted()
+    {
+        foreach ($this->getActions() as $action) {
+            if ($action->isSelected() == true) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected function selectActions()
+    {
+
+        $request = $this->getRequestArray();
+
+        foreach($this->getActions() as $action) {
+
+            $name = $action->getAction();
+            $value = $action->getValue();
+
+            if(isset($request[$name]) && $request[$name] == $value){
+                $action->setSelected(TRUE);
+            }
+        }
+
     }
 
     /**
@@ -543,6 +565,7 @@ class Form extends FormItem implements ArrayAccess
     public function __toString(){
 
         static::callFormModifiers($this);
+        $this->fillByRequestArray();
 
         try{
             return $this->getRenderer()->renderFormItem($this);
@@ -571,46 +594,43 @@ class Form extends FormItem implements ArrayAccess
         return $this->_ignoreFillIfSubmitted;
     }
 
-    public function throwValidationException($doThrow=TRUE){
-        $this->_throwValidationErrors = $doThrow;
-        return $this;
-    }
+    public static function getActionUrlProvider()
+    {
 
-    public function areValidationExceptionsThrown(){
-        return $this->_throwValidationErrors;
-    }
-
-    public static function getActionUrlProvider(){
-
-        if(static::$defaultActionProvider){
+        if (static::$defaultActionProvider) {
            return static::$defaultActionProvider;
         }
 
-        if (!$provider = static::getFromListener('form.urlprovider-requested')) {
-            $provider = new RequestUriActionUrlProvider();
+        if (static::$actionUrlProviderCreator) {
+            static::$defaultActionProvider = call_user_func(
+                static::$actionUrlProviderCreator
+            );
+            return static::$defaultActionProvider;
         }
 
-        static::setActionUrlProvider($provider);
+        static::$defaultActionProvider = new RequestUriActionUrlProvider;
 
         return static::$defaultActionProvider;
     }
 
-    public static function setActionUrlProvider(ActionUrlProviderInterface $provider){
-        static::$defaultActionProvider = $provider;
+    public static function provideUrlProvider(callable $callable)
+    {
+        static::$actionUrlProviderCreator = $callable;
     }
 
     public static function getRenderer()
     {
 
-        if(static::$renderer){
+        if (static::$renderer) {
             return static::$renderer;
         }
 
-        if (!$renderer = static::getFromListener('form.renderer-requested')) {
-            $renderer = new PhpRenderer();
+        if (static::$rendererCreator) {
+            static::setRenderer(call_user_func(static::$rendererCreator));
+            return static::$renderer;
         }
 
-        static::setRenderer($renderer);
+        static::setRenderer(new PhpRenderer());
 
         return static::$renderer;
     }
@@ -622,24 +642,25 @@ class Form extends FormItem implements ArrayAccess
 
     }
 
-    public static function getValidatorFactory(){
-
-        if(static::$validatorFactory){
-            return static::$validatorFactory;
-        }
-
-        if (!$factory = static::getFromListener('form.validatorFactory-requested')) {
-            $factory = new SimpleFactory;
-        }
-
-        static::setValidatorFactory($factory);
-
-        return static::$validatorFactory;
-
+    public static function provideRenderer(callable $callable)
+    {
+        static::$rendererCreator = $callable;
     }
 
-    public static function setValidatorFactory(FactoryInterface $factory){
-        static::$validatorFactory = $factory;
+    public static function createValidationBroker(Form $form)
+    {
+        if (static::$validationBrokerCreator) {
+            return call_user_func(static::$validationBrokerCreator, $form);
+        }
+
+        $broker = new GenericBroker();
+        $broker->setForm($form);
+        return $broker;
+    }
+
+    public static function provideValidationBroker(callable $callable)
+    {
+        static::$validationBrokerCreator = $callable;
     }
 
     public static function getRequestProvider(){
@@ -648,18 +669,22 @@ class Form extends FormItem implements ArrayAccess
             return static::$requestProvider;
         }
 
-        if (!$provider = static::getFromListener('form.requestprovider-requested')) {
-            $provider = new GlobalsRequestProvider;
+        if (static::$requestProviderCreator) {
+            $requestProvider = call_user_func(static::$requestProviderCreator);
+            static::$requestProvider = $requestProvider;
+            return static::$requestProvider;
+
         }
 
-        static::setRequestProvider($provider);
+        static::$requestProvider = new GlobalsRequestProvider;
 
         return static::$requestProvider;
 
     }
 
-    public static function setRequestProvider(RequestProviderInterface $provider){
-        static::$requestProvider = $provider;
+    public static function provideRequestProvider(callable $callable)
+    {
+        static::$requestProviderCreator = $callable;
     }
 
     public static function addFormModifier($modifier){
@@ -673,17 +698,6 @@ class Form extends FormItem implements ArrayAccess
         foreach(static::$formModifiers as $modifier){
             $modifier($form);
         }
-    }
-
-    protected static function getFromListener($event)
-    {
-
-        if (!isset(static::$staticEventBus)) {
-            return;
-        }
-
-        return static::$staticEventBus->fire($event, null, true);
-
     }
 
     protected static function fireStatic($event, $args)
