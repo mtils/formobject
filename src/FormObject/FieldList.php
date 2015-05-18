@@ -96,13 +96,7 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
 
     public function offsetSet($offset, $value){
 
-        $newOffset = true;
-
-        if (isset($this->fields[$offset])) {
-            $newOffset = false;
-        }
-
-        if ($newOffset) {
+        if (!isset($this->fields[$offset])) {
             $this->keyOrder[] = $offset;
         }
 
