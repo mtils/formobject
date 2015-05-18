@@ -96,7 +96,15 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
 
     public function offsetSet($offset, $value){
 
-        $this->keyOrder[] = $offset;
+        $newOffset = true;
+
+        if (isset($this->fields[$offset])) {
+            $newOffset = false;
+        }
+
+        if ($newOffset) {
+            $this->keyOrder[] = $offset;
+        }
 
         $this->fields[$offset] = $value;
 
@@ -321,7 +329,7 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
             $fieldListCount = 0;
             foreach($this->parent as $field){
                 if($field instanceof self){
-                    if( $field == $this && $fieldListCount == 0){
+                    if( $field === $this && $fieldListCount == 0){
                         return TRUE;
                     }
                 $fieldListCount++;
@@ -343,7 +351,7 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
             foreach($this->parent as $field){
                 if($field instanceof self){
                     $i++;
-                    if( $field == $this && $i == $fieldListCount){
+                    if( $field === $this && $i == $fieldListCount){
                         return TRUE;
                     }
                 }
@@ -362,5 +370,10 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
             return;
         }
         return $this->get($this->keyOrder[0]);
+    }
+
+    public function rawFields()
+    {
+        return $this->fields;
     }
 }
