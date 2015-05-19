@@ -67,10 +67,15 @@ class SimpleValidator implements ValidatorAdapterInterface{
         return FALSE;
     }
 
-    public function getMessages($fieldName){
+    public function getMessages($fieldName=null){
         if(!$this->validated){
             $this->validate($this->form->data);
         }
+
+        if ($fieldName === null) {
+            return $this->allMessages();
+        }
+
         if(isset($this->validators[$fieldName])){
             return $this->validators[$fieldName]->getMessages();
         }

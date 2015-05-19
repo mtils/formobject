@@ -37,7 +37,7 @@ interface ValidatorInterface{
      * @param string $fieldName
      * @return \Traversable
      **/
-    public function getMessages($fieldName);
+    public function getMessages($fieldName=null);
 
     /**
      * @brief Returns a iterable of names describing the type of this field
