@@ -64,6 +64,23 @@ class SelectOneField extends Field implements Selectable{
     }
 
     public function isItemSelected(SelectableProxy $item){
+
+        if ($item->getKey() === '' && $this->value === null) {
+            return true;
+        }
+
+        if ($item->getKey() === '0' && $this->value === null) {
+            return false;
+        }
+
+        if ($item->getKey() === 0 && $this->value === null) {
+            return false;
+        }
+
+        if ($item->getKey() === 0 && $this->value === '') {
+            return false;
+        }
+
         return ($item->getKey() == $this->value);
     }
 
