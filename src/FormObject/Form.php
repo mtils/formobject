@@ -15,6 +15,7 @@ use FormObject\Http\ActionUrlProviderInterface;
 use FormObject\Http\RequestUriActionUrlProvider;
 use FormObject\Http\RequestProviderInterface;
 use FormObject\Http\GlobalsRequestProvider;
+use FormObject\Naming\NamerChain;
 
 use FormObject\Renderer\RendererInterface;
 use FormObject\Renderer\PhpRenderer;
@@ -41,6 +42,10 @@ class Form extends FormItem implements ArrayAccess
     protected static $requestProviderCreator;
 
     protected static $actionUrlProviderCreator;
+
+    protected static $namerProviders = [];
+
+    protected static $fieldNamer;
 
     protected static $rendererCreator;
 
@@ -84,6 +89,8 @@ class Form extends FormItem implements ArrayAccess
     protected $validationBroker;
 
     protected $_ignoreFillIfSubmitted = TRUE;
+
+    protected $model;
 
     /**
     * @brief multipart/form-data
@@ -153,9 +160,31 @@ class Form extends FormItem implements ArrayAccess
         $actions = new FieldList;
         $actions->setForm($this);
 
-        $actions->push(Action::create('submit')->setTitle('Submit'));
+        $actions->push(Action::create('submit'));
 
         return $actions;
+    }
+
+    protected function createActionList($actionName='', $actionTitle='')
+    {
+
+        $actions = new FieldList;
+        $actions->setForm($this);
+
+        if (!$actionName && !$actionTitle) {
+            return $actions;
+        }
+
+        $action = Action::create($actionName);
+
+        if ($actionTitle) {
+            $action->setTitle($actionTitle);
+        }
+
+        $actions->push($action);
+
+        return $actions;
+
     }
 
     protected function updateAttributes(Attributes $attributes){
@@ -435,6 +464,17 @@ class Form extends FormItem implements ArrayAccess
 
     }
 
+    public function getModel()
+    {
+        return $this->model;
+    }
+
+    public function setModel($model)
+    {
+        $this->model = $model;
+        return $this;
+    }
+
     protected function performAutoValidation()
     {
         if ($this->wasSubmitted()) {
@@ -594,6 +634,33 @@ class Form extends FormItem implements ArrayAccess
         return $this->_ignoreFillIfSubmitted;
     }
 
+    public function _fieldTitle(Field $field)
+    {
+        return $this->getFieldNamer()->getTitle($this, $field);
+    }
+
+    public function _fieldDescription(Field $field)
+    {
+        return $this->getFieldNamer()->getDescription($this, $field);
+    }
+
+    public function _fieldTooltip(Field $field)
+    {
+        return $this->getFieldNamer()->getTooltip($this, $field);
+    }
+
+    public function getFieldNamer()
+    {
+
+        if (!isset(static::$fieldNamer)) {
+            static::$fieldNamer = new NamerChain;
+            static::callNamerProviders(static::$fieldNamer);
+        }
+
+        return static::$fieldNamer;
+
+    }
+
     public static function getActionUrlProvider()
     {
 
@@ -663,6 +730,11 @@ class Form extends FormItem implements ArrayAccess
         static::$validationBrokerCreator = $callable;
     }
 
+    public static function provideAdditionalNamer(callable $provider)
+    {
+        static::$namerProviders[] = $provider;
+    }
+
     public static function getRequestProvider(){
 
         if(static::$requestProvider){
@@ -704,6 +776,13 @@ class Form extends FormItem implements ArrayAccess
     {
         if (isset(static::$staticEventBus)) {
             static::$staticEventBus->fire($event, $args);
+        }
+    }
+
+    protected static function callNamerProviders(NamerChain $namer)
+    {
+        foreach (static::$namerProviders as $provider) {
+            $provider($namer);
         }
     }
 

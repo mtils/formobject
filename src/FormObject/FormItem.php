@@ -18,7 +18,7 @@ class FormItem{
     * @brief The Tooltip (title attribute)
     * @var string
     */
-    protected $tooltip = "";
+    protected $tooltip;
 
     protected $title;
 

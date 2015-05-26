@@ -18,6 +18,11 @@ class Action extends \FormObject\Field{
         return parent::setName("action_$cleanedName");
     }
 
+    public function getShortName()
+    {
+        return str_replace('action_', '', $this->getName());
+    }
+
     public function setValue($value){
         return $this;
     }

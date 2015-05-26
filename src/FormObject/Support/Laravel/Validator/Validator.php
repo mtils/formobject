@@ -144,7 +144,7 @@ class Validator implements ValidatorInterface{
         return preg_replace('/[^a-zA-Z0-9]+/u', '-', $rule);
     }
 
-    protected function buildAttributeNames($form){
+    public function buildAttributeNames($form){
 
         $attributeNames = array();
 

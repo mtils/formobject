@@ -13,6 +13,8 @@ class Field extends FormItem{
 
     protected $value;
 
+    protected $langGroup = 'forms';
+
     protected $parent;
 
     protected $childs;
@@ -20,6 +22,13 @@ class Field extends FormItem{
     protected $valid = NULL;
 
     protected $ruleClassesAdded = FALSE;
+
+    /**
+     * You can set a different owner to allow automatic translation keys per owner
+     *
+     * @var object
+     **/
+    protected $owner;
 
     public function __construct($name=NULL, $title=NULL){
 
@@ -41,6 +50,41 @@ class Field extends FormItem{
             );
         }
         return parent::getId();
+    }
+
+    public function getTitle()
+    {
+        if ($this->title === null && $this->form) {
+            return $this->form->_fieldTitle($this);
+        }
+        return parent::getTitle();
+    }
+
+    public function getTooltip()
+    {
+        if ($this->tooltip === null && $this->form) {
+            return $this->form->_fieldTooltip($this);
+        }
+        return parent::getTooltip();
+    }
+
+    public function getDescription()
+    {
+        if ($this->description === null && $this->form) {
+            return $this->form->_fieldDescription($this);
+        }
+        return parent::getDescription();
+    }
+
+    public function getLangGroup()
+    {
+        return $this->langGroup;
+    }
+
+    public function setLangGroup($langGroup)
+    {
+        $this->langGroup = $langGroup;
+        return $this;
     }
 
     public function getForm(){
@@ -202,6 +246,45 @@ class Field extends FormItem{
     public function getAttributeTitles()
     {
         return [$this->getName()=>$this->getTitle()];
+    }
+
+    /**
+     * Return the owner of this field. Mostly this is the form but if you
+     * adding fields by plugins sometimes its handy to hold a reference to its
+     * owner
+     *
+     * @return object
+     **/
+    public function getOwner()
+    {
+        if (!$this->owner) {
+            return $this->getForm();
+        }
+
+        return $this->owner;
+    }
+
+    /**
+     * Set a owner of this field
+     *
+     * @param object $owner
+     * @return self
+     **/
+    public function setOwner($owner)
+    {
+        $this->owner = $owner;
+        return $this;
+    }
+
+    public function hasDifferentOwner()
+    {
+        return (bool)$this->owner;
+    }
+
+    public function resetOwner()
+    {
+        $this->owner = null;
+        return $this;
     }
 
     protected function addRuleCssClassesIfNotAdded()

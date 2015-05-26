@@ -15,6 +15,7 @@ use FormObject\Support\LegacyFormObject\Validation\AutoValidatorBroker;
 use FormObject\Support\Laravel\Http\InputRequestProvider;
 use FormObject\Support\Laravel\Http\CurrentActionUrlProvider;
 use FormObject\Support\Laravel\Http\ResourceActionUrlProvider;
+use FormObject\Factory;
 
 class FormObjectServiceProvider extends ServiceProvider
 {
@@ -50,8 +51,18 @@ class FormObjectServiceProvider extends ServiceProvider
             return $this->getRenderer();
         });
 
+        Form::provideAdditionalNamer(function($chain){
+            $chain->append($this->getTranslationNamer());
+        });
+
         $this->app['events']->listen('form.renderer-changed', function($renderer) {
             $this->addFormPaths($renderer);
+        });
+
+        $this->app->alias('formobject.factory', 'FormObject\Factory');
+
+        $this->app->singleton('formobject.factory', function($app){
+            return new Factory;
         });
 
     }
@@ -96,6 +107,11 @@ class FormObjectServiceProvider extends ServiceProvider
             $renderer->addPath($path);
         }
 
+    }
+
+    public function getTranslationNamer()
+    {
+        return $this->app->make('FormObject\Support\Laravel\Naming\TranslationNamer');
     }
 
     public function boot(){
