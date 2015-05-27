@@ -1,4 +1,4 @@
-<?php namespace Cmsable\Facades;
+<?php namespace FormObject\Support\Laravel;
 
 use Illuminate\Support\Facades\Facade;
 
