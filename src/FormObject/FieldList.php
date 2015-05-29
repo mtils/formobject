@@ -43,6 +43,17 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
         return $this->hasSwitchableChildren();
     }
 
+    public function isValid(){
+
+        foreach( $this->getDataFields() as $field) {
+            if (!$field->isValid()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function hasSwitchableChildren()
     {
 
