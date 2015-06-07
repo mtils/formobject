@@ -68,7 +68,19 @@ class Validator implements ValidatorInterface{
             return $this->getMessageBag()->all();
         }
 
-        return $this->getMessageBag()->get($this->fieldNameToMessageKey($fieldName));
+        $messageBag = $this->getMessageBag();
+        $messageKey = $this->fieldNameToMessageKey($fieldName);
+
+        if ($messageBag->has($messageKey)) {
+            return $messageBag->get($messageKey);
+        }
+
+        // Fix for older form object where validation rules are forced to have
+        // also __ delimiters
+        $oldMessageKey = str_replace('.', '__', $messageKey);
+
+        return $messageBag->get($oldMessageKey);
+
     }
 
     protected function fieldNameToRuleKey($fieldName)
@@ -78,7 +90,7 @@ class Validator implements ValidatorInterface{
 
     protected function fieldNameToMessageKey($fieldName)
     {
-        $multiDotted = str_replace(['[',']'],['.','.'],$fieldName);
+        $multiDotted = str_replace(['[',']','__'],['.','.','.'],$fieldName);
         return trim(str_replace('..','.',$multiDotted), '.');
     }
 
