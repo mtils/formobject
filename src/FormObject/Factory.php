@@ -29,6 +29,15 @@ class Factory
 
     }
 
+    public function form($pseudoClass)
+    {
+        $suffix = substr($pseudoClass, strlen($pseudoClass)-4, strlen($pseudoClass));
+        if ($suffix != 'Form') {
+            $pseudoClass .= 'Form';
+        }
+        return Form::create()->setClassName($pseudoClass);
+    }
+
     public function group($attributes, callable $callable)
     {
 

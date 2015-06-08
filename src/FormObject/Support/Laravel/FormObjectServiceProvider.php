@@ -62,7 +62,7 @@ class FormObjectServiceProvider extends ServiceProvider
         $this->app->alias('formobject.factory', 'FormObject\Factory');
 
         $this->app->singleton('formobject.factory', function($app){
-            return new Factory;
+            return Form::getFactory();
         });
 
     }

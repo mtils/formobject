@@ -19,6 +19,7 @@ use FormObject\Naming\NamerChain;
 
 use FormObject\Renderer\RendererInterface;
 use FormObject\Renderer\PhpRenderer;
+use FormObject\Factory;
 
 class Form extends FormItem implements ArrayAccess
 {
@@ -54,6 +55,8 @@ class Form extends FormItem implements ArrayAccess
     protected static $staticEventBus;
 
     protected static $formModifiers = [];
+
+    protected static $factory;
 
     /**
     * @brief Holds the Form Fields
@@ -237,8 +240,7 @@ class Form extends FormItem implements ArrayAccess
 
     public function getName(){
         if(!$this->name){
-            $class = new ReflectionClass(get_called_class());
-            return self::phpClassNameToCssClassName($class->getShortName());
+            return self::phpClassNameToCssClassName($this->getClassName());
         }
         return parent::getName();
     }
@@ -295,8 +297,26 @@ class Form extends FormItem implements ArrayAccess
         return $this->getFields()->__invoke($name);
     }
 
-    public function __call($method, $params){
+    public function __call($method, $params)
+    {
+
+        if (strpos($method, 'with') === 0) {
+            $fieldClass = substr($method, 4);
+            $field = static::__callStatic($fieldClass, $params);
+            $this->push($field);
+            return $this;
+        }
+
+        if ($this->wasStaticOrSelf()) {
+            return static::__callStatic($method, $params);
+        }
+
         return call_user_func_array([$this->getFields(), $method], $params);
+    }
+
+    public static function __callStatic($method, array $params=[])
+    {
+        return static::getFactory()->__call($method, $params);
     }
 
     public function getAction(){
@@ -359,7 +379,7 @@ class Form extends FormItem implements ArrayAccess
     public function fillByArray($data, $prefix=NULL){
 
         if($this->_ignoreFillIfSubmitted && $this->wasSubmitted()){
-            return;
+            return $this;
         }
 
         foreach($this->getDataFields() as $field){
@@ -395,6 +415,7 @@ class Form extends FormItem implements ArrayAccess
 
         }
         $this->dataOrigin = self::MANUAL;
+        return $this;
     }
 
     public function getErrors($fieldName=null)
@@ -410,6 +431,32 @@ class Form extends FormItem implements ArrayAccess
     public function getRuleNames($fieldName)
     {
         return $this->getValidationBroker()->getRuleNames($fieldName);
+    }
+
+    public function setRuleNames($ruleNames)
+    {
+        $this->getValidator()->setRules($ruleNames);
+        return $this;
+    }
+
+    protected function wasStaticOrSelf()
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)[2];
+
+        if ($trace['type'] == '::') {
+            return true;
+        }
+        if (!isset($trace['class'])) {
+            return false;
+        }
+        if ($trace['class'] == 'FormObject\Form') {
+            return true;
+        }
+        if (is_subclass_of($trace['class'], 'FormObject\Form')) {
+            return true;
+        }
+
+        return false;
     }
 
     protected function isOnlyRootPrefix($prefix)
@@ -764,6 +811,19 @@ class Form extends FormItem implements ArrayAccess
             throw new InvalidArgumentException('Modifier has to be callable');
         }
         static::$formModifiers[] = $modifier;
+    }
+
+    public static function getFactory()
+    {
+        if (!static::$factory) {
+            static::$factory = new Factory;
+        }
+        return static::$factory;
+    }
+
+    public static function setFactory(Factory $factory)
+    {
+        static::$factory = $factory;
     }
 
     protected static function callFormModifiers(Form $form){
