@@ -6,6 +6,8 @@ use Collection\NestedArray;
 class InputCaster implements InputCasterContract
 {
 
+    protected $removeConfirmations = true;
+
     /**
      * {@inheritdoc}
      *
@@ -30,7 +32,7 @@ class InputCaster implements InputCasterContract
                 continue;
             }
 
-            if (ends_with($key, '_confirmation')) {
+            if ($this->removeConfirmations && ends_with($key, '_confirmation')) {
                 continue;
             }
 
@@ -39,6 +41,12 @@ class InputCaster implements InputCasterContract
 
         return NestedArray::toNested($filtered, '__');
 
+    }
+
+    public function withConfirmations($with=true)
+    {
+        $this->removeConfirmations = !$with;
+        return $this;
     }
 
 }
