@@ -26,6 +26,10 @@ class Attributes extends StringDictionary{
      **/
     public function __toString(){
 
+        if (!count($this)) {
+            return '';
+        }
+
         $rows = array();
 
         foreach($this as $key=>$value){
