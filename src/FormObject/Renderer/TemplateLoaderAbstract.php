@@ -22,7 +22,7 @@ abstract class TemplateLoaderAbstract
 
     public function addPath($path){
         $path = rtrim($path, '/\\') . '/';
-        array_unshift($this->paths, $path);
+        $this->paths[] = $path;
         return $this;
     }
 
