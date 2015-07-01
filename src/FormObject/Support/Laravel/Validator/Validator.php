@@ -59,7 +59,7 @@ class Validator implements ValidatorInterface{
     }
 
     public function hasErrors($fieldName){
-        return (bool)count($this->getMessageBag()->get($this->fieldNameToMessageKey($fieldName)));
+        return (bool)count($this->getMessages($fieldName));
     }
 
     public function getMessages($fieldName=null){
