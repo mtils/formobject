@@ -121,21 +121,24 @@ class Validator implements ValidatorInterface{
         }
     }
 
+    /**
+     * @param string $fieldName
+     * @return array
+     */
     public function getRuleNames($fieldName){
 
-        $ruleNames = array();
-
+        $originalFieldName = $fieldName;
         $fieldName = $this->fieldNameToRuleKey($fieldName);
 
-        foreach($this->getRules() as $key=>$rules){
-            $rules = $this->explodeRule($rules);
+        $rules = $this->getRules();
 
-            if($key == $fieldName){
-                foreach($rules as $rule){
-                    $ruleNames[] = $this->ruleToName($rule);
-                }
-                break;
-            }
+        if (!$ruleData = $this->extractRuleData($fieldName, $rules, $originalFieldName)) {
+            return [];
+        }
+
+        $ruleNames =[];
+        foreach ($this->explodeRule($ruleData) as $rule) {
+            $ruleNames[] = $this->ruleToName($rule);
         }
 
         return $ruleNames;
@@ -244,6 +247,23 @@ class Validator implements ValidatorInterface{
     protected function isResizableFieldName($fieldName)
     {
         return (bool)strpos($fieldName, '.*.');
+    }
+
+    /**
+     * @param $fieldName
+     * @param $rules
+     * @param $originalFieldName
+     * @return string
+     */
+    public function extractRuleData($fieldName, $rules, $originalFieldName)
+    {
+        if (isset($rules[$fieldName])) {
+            return $rules[$fieldName];
+        }
+        if (isset($rules[$originalFieldName])) {
+            return $rules[$originalFieldName];
+        }
+        return '';
     }
 
 } 
