@@ -19,14 +19,11 @@ class InputRequestProvider implements RequestProviderInterface{
     public function getRequestAsArray($method)
     {
 
-        if($old = $this->request->old()){
-            $data = $old;
+        if ($old = $this->request->old()) {
+            return $old;
         }
-        else{
-            $data = $this->request->all();
-        }
-
-        return $data;
+        
+        return $this->request->all();
 
      }
 
