@@ -381,4 +381,17 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
     {
         return $this->fields;
     }
+
+    public function copy($prefix='')
+    {
+
+        $copy = parent::copy($prefix);
+
+        foreach ($this as $field) {
+            $copy->push($field->copy($prefix));
+        }
+
+        return $copy;
+
+    }
 }

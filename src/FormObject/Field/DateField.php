@@ -32,8 +32,8 @@ class DateField extends Field{
         return $this;
     }
 
-    public function copy(){
-        $copy = parent::copy();
+    public function copy($prefix=''){
+        $copy = parent::copy($prefix);
         $copy->setMultiLine($this->isMultiLine());
         return $copy;
     }

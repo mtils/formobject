@@ -519,6 +519,7 @@ class Form extends FormItem implements ArrayAccess
     public function setModel($model)
     {
         $this->model = $model;
+        $this->fireEvent('form.model-setted',[$this, $this->model]);
         return $this;
     }
 
@@ -665,7 +666,7 @@ class Form extends FormItem implements ArrayAccess
         return "";
     }
 
-    public function copy(){
+    public function copy($prefix=''){
         $copy = static::create();
         $copy->setName($this->getName())
              ->setEncType($this->getEncType());

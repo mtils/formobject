@@ -186,8 +186,16 @@ class Field extends FormItem{
         return "";
     }
 
-    public function copy(){
-        $copy = static::create($this->name, $this->title);
+    public function copy($prefix='')
+    {
+
+        if ($prefix) {
+            $name = $prefix . '__' . $this->name;
+        } else {
+            $name = $this->name;
+        }
+
+        $copy = static::create($name, $this->title);
         if($this->hasTitle()){
             $copy->setTitle($this->title);
         }
@@ -231,14 +239,14 @@ class Field extends FormItem{
 
         $tiled = explode('__', $this->getName());
 
-        if(isset($tiled[1])){
-            $prefix = $tiled[0];
-            $name = $tiled[1];
-        }
-        else{
+        if (isset($tiled[1])) {
+            $name = array_pop($tiled);
+            $prefix = implode('__', $tiled);
+        } else {
             $prefix = '';
             $name = $tiled[0];
         }
+
         return [$prefix, $name];
 
     }

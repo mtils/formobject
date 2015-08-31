@@ -110,8 +110,8 @@ class BooleanRadioField extends BooleanField implements Selectable{
         return $this;
     }
 
-    public function copy(){
-        $copy = parent::copy();
+    public function copy($prefix=''){
+        $copy = parent::copy($prefix);
         $copy->setStringForFalse($this->falseString);
         $copy->setStringForTrue($this->trueString);
         $copy->setSrc($this->getSrc(), $this->manualExtractor);

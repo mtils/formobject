@@ -80,10 +80,10 @@ class SelectOneGroup extends FieldList implements Selectable{
         return TRUE;
     }
 
-    public function copy(){
+    public function copy($prefix=''){
         $copy = static::create($this->name, $this->title);
         foreach($this as $field){
-            $copy->push($field->copy());
+            $copy->push($field->copy($prefix));
         }
         return $copy;
     }
