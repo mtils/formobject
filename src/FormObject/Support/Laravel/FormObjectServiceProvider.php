@@ -4,6 +4,7 @@
 use Signal\Support\Laravel\IlluminateBus;
 
 use Illuminate\Support\ServiceProvider;
+use Collection\NestedArray;
 
 use FormObject\Renderer\RendererInterface;
 use FormObject\Http\ActionUrlProviderChain;
@@ -65,6 +66,11 @@ class FormObjectServiceProvider extends ServiceProvider
             return Form::getFactory();
         });
 
+        $this->app->afterResolving('XType\Casting\Contracts\InputCaster', function($caster) {
+            $this->registerInputCasters($caster);
+        });
+
+
     }
 
     public function getActionUrlProvider()
@@ -112,6 +118,69 @@ class FormObjectServiceProvider extends ServiceProvider
     public function getTranslationNamer()
     {
         return $this->app->make('FormObject\Support\Laravel\Naming\TranslationNamer');
+    }
+
+    protected function registerInputCasters($caster)
+    {
+
+        $caster->add('no_leading_underscore', function($input) {
+
+            $cleaned = [];
+            foreach ($input as $key=>$value) {
+                // tokens, _method...
+                if (!starts_with($key,'_')) {
+                    $cleaned[$key] = $value;
+                }
+            }
+
+            return $cleaned;
+
+        });
+
+        $caster->add('no_actions', function($input) {
+
+            $cleaned = [];
+            foreach ($input as $key=>$value) {
+                // form actions
+                if (!str_contains($key,'-')) {
+                    $cleaned[$key] = $value;
+                }
+            }
+
+            return $cleaned;
+
+        });
+
+        $caster->add('no_confirmations', function($input) {
+
+            $cleaned = [];
+            foreach ($input as $key=>$value) {
+                // form actions
+                if (!ends_with($key, '_confirmation')) {
+                    $cleaned[$key] = $value;
+                }
+            }
+
+            return $cleaned;
+
+        });
+
+        $caster->add('nested', function($input) {
+            return NestedArray::toNested($input, '.');
+        });
+
+        $caster->add('dotted', function($input) {
+
+            $cleaned = [];
+            foreach ($input as $key=>$value) {
+                // form naming to dots
+                $cleaned[str_replace('__','.', $key)] = $value;
+            }
+
+            return $cleaned;
+
+        });
+
     }
 
     public function boot(){
