@@ -6,7 +6,7 @@ class LiteralField extends Field{
 
     protected $content = '';
 
-    public function __construct($name, $content=null)
+    public function __construct($name=null, $content=null)
     {
         parent::__construct($name);
 
