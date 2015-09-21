@@ -1,11 +1,24 @@
 <?php namespace FormObject;
 
+
 class Factory
 {
 
     protected $namespaces = ['FormObject\Field'];
 
     protected $groupStack = [];
+
+    /**
+     * @var callable
+     **/
+    protected $fieldCreator;
+
+    public function __construct()
+    {
+        $this->fieldCreator = function($class) {
+            return new $class;
+        };
+    }
 
     public function __call($method, array $params=[])
     {
@@ -21,7 +34,9 @@ class Factory
 
         $class = $this->findClass($baseName);
 
-        $field = new $class($name);
+        $field = call_user_func($this->fieldCreator, $class);
+
+        $field->setName($name);
 
         $this->applyAttributes($field, $attributes);
 
@@ -56,6 +71,12 @@ class Factory
     public function prependNamespace($namespace)
     {
         $this->namespaces[] = trim($namespace,'\\');
+    }
+
+    public function createFieldsWith(callable $creator)
+    {
+        $this->fieldCreator = $creator;
+        return $this;
     }
 
     protected function applyAttributes(Field $field, $attributes)

@@ -63,7 +63,11 @@ class FormObjectServiceProvider extends ServiceProvider
         $this->app->alias('formobject.factory', 'FormObject\Factory');
 
         $this->app->singleton('formobject.factory', function($app){
-            return Form::getFactory();
+            $factory = Form::getFactory();
+            $factory->createFieldsWith(function($class) {
+                return $this->app->make($class);
+            });
+            return $factory;
         });
 
         $this->app->afterResolving('XType\Casting\Contracts\InputCaster', function($caster) {
