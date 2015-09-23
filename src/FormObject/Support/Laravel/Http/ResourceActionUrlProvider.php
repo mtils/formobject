@@ -9,7 +9,8 @@ use FormObject\Http\ActionUrlProviderInterface;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Routing\Router;
 
-class ResourceActionUrlProvider implements ActionUrlProviderInterface{
+class ResourceActionUrlProvider implements ActionUrlProviderInterface
+{
 
     /**
      * @var \FormObject\Support\Laravel\Http\CurrentActionUrlProvider
@@ -38,24 +39,31 @@ class ResourceActionUrlProvider implements ActionUrlProviderInterface{
      * @param \FormObject\Form $form
      * @return string
      **/
-    public function setActionUrl(Form $form){
+    public function setActionUrl(Form $form)
+    {
 
         $current = explode('/', rtrim($this->urlProvider->currentUrl(), '/'));
+
         $lastSegment = array_pop($current);
 
-        if(in_array($lastSegment, ['create','edit'])){
+        if (in_array($lastSegment, ['create','edit'])) {
 
-            $parentUrl = implode('/',$current);
+            $parentUrl = implode('/', $current);
 
             $form->setAction($parentUrl);
 
+        } else {
+            $form->setAction($this->urlProvider->currentUrl());
         }
 
-        if($lastSegment == 'create'){
+        if ($lastSegment == 'create') {
             $form->setVerb('post');
+            return;
         }
-        elseif($lastSegment == 'edit'){
+
+        if($lastSegment == 'edit') {
             $form->setVerb('put');
+            return;
         }
 
     }
