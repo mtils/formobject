@@ -54,9 +54,15 @@ class Field extends FormItem{
 
     public function getTitle()
     {
-        if ($this->title === null && $this->form) {
-            return $this->form->_fieldTitle($this);
+
+        if ($this->title !== null || !$this->form) {
+            return parent::getTitle();
         }
+
+        if ($title = $this->form->_fieldTitle($this)) {
+            return $title;
+        }
+
         return parent::getTitle();
     }
 

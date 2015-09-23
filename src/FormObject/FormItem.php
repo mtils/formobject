@@ -65,7 +65,7 @@ class FormItem{
     }
 
     public function getTitle(){
-        if(!$this->title){
+        if($this->title === null){
             return $this->name;
         }
         return $this->title;
