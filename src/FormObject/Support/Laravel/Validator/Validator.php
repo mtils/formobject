@@ -166,6 +166,7 @@ class Validator implements ValidatorInterface{
         foreach ($form->getDataFields() as $field){
             foreach ($field->getAttributeTitles() as $name=>$title) {
                 $attributeNames[$this->fieldNameToMessageKey($name)] = $title;
+                $attributeNames[str_replace('.', '__', $this->fieldNameToMessageKey($name))] = $title;
             }
         }
 
