@@ -15,6 +15,11 @@ class SelectOneField extends Field implements Selectable{
 
     protected $columns;
 
+    protected $nullEntry = [
+        'value' => '',
+        'name'  => ''
+    ];
+
     public function __construct($name=NULL, $title=NULL){
         parent::__construct($name, $title);
 
@@ -120,6 +125,32 @@ class SelectOneField extends Field implements Selectable{
         $copy->setSrc($this->src, $this->manualExtractor);
 
         return $copy;
+    }
+
+    public function by($keyName, $valueName)
+    {
+        $this->manualExtractor = new Extractor($keyName, $valueName);
+        return $this;
+    }
+
+    public function nullEntry($name, $value='')
+    {
+        $this->nullEntry = [
+            'value' => $value,
+            'name'  => $name
+        ];
+
+        return $this;
+    }
+
+    public function getNullEntry()
+    {
+        return $this->nullEntry;
+    }
+
+    public function hasNullEntry()
+    {
+        return (bool)$this->nullEntry['name'];
     }
 
 }
