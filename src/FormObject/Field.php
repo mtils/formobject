@@ -1,5 +1,6 @@
 <?php namespace FormObject;
 
+use FormObject\Form;
 use FormObject\Attributes;
 
 class Field extends FormItem{
@@ -41,15 +42,20 @@ class Field extends FormItem{
         }
     }
 
-    public function getId(){
-        if(!$this->id){
+    public function getId()
+    {
+        if (!$this->id) {
+
             $search = array('[',']');
             $replace = array('.',':');
-            $this->setId($this->form->getId() . '__' . 
-                        str_replace($search,$replace,$this->getName())
-            );
+
+            $formId = $this->form ? $this->form->getId() . '__' : '';
+
+            $this->setId($formId . str_replace($search, $replace, $this->getName()));
         }
+
         return parent::getId();
+
     }
 
     public function getTitle()
@@ -154,6 +160,10 @@ class Field extends FormItem{
 
     public function isValid(){
 
+        if (!$this->form) {
+            return true;
+        }
+
         if($this->valid === NULL){
             $this->valid = !$this->form->hasErrors($this->name);
         }
@@ -182,7 +192,8 @@ class Field extends FormItem{
 
         try{
             $this->addRuleCssClassesIfNotAdded();
-            return $this->form->getRenderer()->renderFormItem($this);
+            $renderer = $this->form ? $this->form->getRenderer() : Form::getRenderer();
+            return $renderer->renderFormItem($this);
         }
         // No exceptions inside __toString
         catch(\Exception $e){
@@ -303,11 +314,15 @@ class Field extends FormItem{
 
     protected function addRuleCssClassesIfNotAdded()
     {
-        if(!$this->ruleClassesAdded && $this->form){
+        if (!$this->ruleClassesAdded && $this->form) {
             foreach($this->form->getRuleNames($this->name) as $ruleName){
                 $this->getCssClasses()->append($ruleName);
             }
             $this->ruleClassesAdded = TRUE;
+        }
+
+        if (!$this->form) {
+            $this->addCssClass('no-label');
         }
     }
 
