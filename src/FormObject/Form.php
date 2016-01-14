@@ -95,6 +95,8 @@ class Form extends FormItem implements ArrayAccess
 
     protected $model;
 
+    protected $autoFilled = false;
+
     /**
     * @brief multipart/form-data
     * @var string
@@ -652,8 +654,7 @@ class Form extends FormItem implements ArrayAccess
 
     public function __toString(){
 
-        static::callFormModifiers($this);
-        $this->fillByRequestArray();
+        $this->autoFillIfNotDone();
 
         try{
             return $this->getRenderer()->renderFormItem($this);
@@ -664,6 +665,18 @@ class Form extends FormItem implements ArrayAccess
             trigger_error($e->getMessage(),E_USER_WARNING);
         }
         return "";
+    }
+
+    public function autoFillIfNotDone()
+    {
+
+        if (!$this->autoFilled) {
+            static::callFormModifiers($this);
+            $this->fillByRequestArray();
+        }
+
+        $this->autoFilled = true;
+
     }
 
     public function copy($prefix=''){

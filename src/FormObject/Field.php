@@ -192,6 +192,9 @@ class Field extends FormItem{
 
         try{
             $this->addRuleCssClassesIfNotAdded();
+            if ($this->form) {
+                $this->form->autoFillIfnotDone();
+            }
             $renderer = $this->form ? $this->form->getRenderer() : Form::getRenderer();
             return $renderer->renderFormItem($this);
         }
