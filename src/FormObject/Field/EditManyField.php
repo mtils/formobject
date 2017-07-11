@@ -84,13 +84,11 @@ class EditManyField extends Field implements Iterator, ArrayAccess{
 
     }
 
-    public function setValue($value){
-        if(!$value){
-            $this->value = array();
-        }
-        else{
-            $this->value = $value;
-        }
+    public function setValue($value)
+    {
+        $value = $value ? $value : [];
+        $value = is_array($value) ? $value : iterator_to_array($value);
+        $this->value = array_values($value);
         return $this;
     }
 
@@ -234,9 +232,4 @@ class EditManyField extends Field implements Iterator, ArrayAccess{
         return $this;
     }
 
-    public function __toString_()
-    {
-        $res = parent::__toString();
-        die('Karpotten');
-    }
 }
