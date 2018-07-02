@@ -1,0 +1,109 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "de958612d5fadf542fe86c5c5a87ec7e",
+    "packages": [
+        {
+            "name": "ems/collection",
+            "version": "v0.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mtils/collection.git",
+                "reference": "ff7dd9d84b89f027e17e5de974ecd2ea560149e2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mtils/collection/zipball/ff7dd9d84b89f027e17e5de974ecd2ea560149e2",
+                "reference": "ff7dd9d84b89f027e17e5de974ecd2ea560149e2",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Collection": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Michael Tils",
+                    "email": "mtils@web-utils.de",
+                    "homepage": "http://web-utils.de"
+                }
+            ],
+            "description": "Collection are Dictionaries, Maps, Lists and Iterators for php",
+            "keywords": [
+                "Lists",
+                "arrays",
+                "dictionary",
+                "iterators",
+                "python-php"
+            ],
+            "time": "2018-07-02T11:47:23+00:00"
+        },
+        {
+            "name": "ems/signal",
+            "version": "v0.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mtils/ems-signal.git",
+                "reference": "3246eea699dce1a6d6f758bcfc89b20320f6becc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mtils/ems-signal/zipball/3246eea699dce1a6d6f758bcfc89b20320f6becc",
+                "reference": "3246eea699dce1a6d6f758bcfc89b20320f6becc",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "illuminate/events": "4.2.*|5.0.*|5.1.*|5.2.*|5.3.*|5.4.*|5.5.*",
+                "mockery/mockery": "~0.9"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Signal": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Michael Tils",
+                    "email": "mtils@web-utils.de",
+                    "homepage": "http://web-utils.de"
+                }
+            ],
+            "description": "A generic core library to work with different event systems in php",
+            "keywords": [
+                "events",
+                "ioc"
+            ],
+            "time": "2018-07-02T12:13:06+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {
+        "php": ">=5.3.0"
+    },
+    "platform-dev": []
+}
