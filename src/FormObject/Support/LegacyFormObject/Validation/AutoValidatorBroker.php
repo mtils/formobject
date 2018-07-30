@@ -1,15 +1,14 @@
 <?php namespace FormObject\Support\LegacyFormObject\Validation;
 
-use Signal\NamedEvent\BusHolderTrait;
-
 use FormObject\Form;
 use FormObject\Validator\FactoryInterface as ValidatorFactory;
 use FormObject\Validation\BrokerInterface;
+use Ems\Core\Patterns\HookableTrait;
 
 class AutoValidatorBroker implements BrokerInterface
 {
 
-    use BusHolderTrait;
+    use HookableTrait;
 
     public $throwExceptions = true;
 
@@ -32,12 +31,6 @@ class AutoValidatorBroker implements BrokerInterface
      * @var array
      **/
     protected $errors = [];
-
-    /**
-     * @var \Signal\Contracts\NamedEvent\Bus
-     **/
-    protected static $staticEventBus;
-
 
     /**
      * @param \FormObject\Validator\FactoryInterface $validatorFactory
@@ -66,7 +59,6 @@ class AutoValidatorBroker implements BrokerInterface
     public function setForm(Form $form)
     {
         $this->form = $form;
-        $this->setEventBus($form->getEventBus());
     }
 
     /**
@@ -165,14 +157,9 @@ class AutoValidatorBroker implements BrokerInterface
      **/
     public function setValidator($validator)
     {
+        $this->callBeforeListeners('setValidator', [$validator]);
         $this->validator = $validator;
-        $this->fireEvent('form.validator-setted',[$validator]);
-    }
-
-    protected function fireEvent($eventPrefix, array $params)
-    {
-        $eventName = $eventPrefix . '.' . $this->form->getEventSuffix();
-        $this->fire($eventName, $params);
+        $this->callAfterListeners('setValidator', [$validator]);
     }
 
 }

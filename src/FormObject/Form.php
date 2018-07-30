@@ -4,8 +4,6 @@ use InvalidArgumentException;
 use ArrayAccess;
 use ReflectionClass;
 
-use Signal\NamedEvent\BusHolderTrait;
-
 use FormObject\Field\Action;
 
 use FormObject\Validation\BrokerInterface;
@@ -20,11 +18,13 @@ use FormObject\Naming\NamerChain;
 use FormObject\Renderer\RendererInterface;
 use FormObject\Renderer\PhpRenderer;
 use FormObject\Factory;
+use Ems\Contracts\Core\HasMethodHooks;
+use Ems\Core\Patterns\HookableTrait;
 
 class Form extends FormItem implements ArrayAccess
 {
 
-    use BusHolderTrait;
+    use HookableTrait;
 
     const GET = 'get';
 
@@ -57,6 +57,11 @@ class Form extends FormItem implements ArrayAccess
     protected static $formModifiers = [];
 
     protected static $factory;
+
+    /**
+     * @var callable
+     **/
+    protected static $rendererChangedListener;
 
     /**
     * @brief Holds the Form Fields
@@ -114,7 +119,10 @@ class Form extends FormItem implements ArrayAccess
         return $this->_fields;
     }
 
-    public function setFields(FieldList $fields){
+    public function setFields(FieldList $fields)
+    {
+
+        $this->callBeforeListeners('setFields', [$fields]);
 
         $this->_fields = $fields;
 
@@ -122,7 +130,9 @@ class Form extends FormItem implements ArrayAccess
 
         $this->_fields->setForm($this);
 
-        $this->fireEvent('form.fields-setted',[$this->_fields]);
+        //$this->fireEvent('form.fields-setted',[$this->_fields]);
+
+        $this->callAfterListeners('setFields', [$this->_fields]);
 
         return $this;
 
@@ -147,13 +157,17 @@ class Form extends FormItem implements ArrayAccess
 
     public function setActions(FieldList $actions){
 
+        $this->callBeforeListeners('setActions', $actions);
+
         $this->_actions = $actions;
 
         $this->_actions->setName('_actions');
 
         $this->_actions->setForm($this);
 
-        $this->fireEvent('form.actions-setted',[$this->_actions]);
+        //$this->fireEvent('form.actions-setted',[$this->_actions]);
+
+        $this->callAfterListeners('setActions', [$this->_actions]);
 
         $this->selectActions();
 
@@ -520,8 +534,11 @@ class Form extends FormItem implements ArrayAccess
 
     public function setModel($model)
     {
+        $this->callBeforeListeners('setModel', [$model]);
         $this->model = $model;
-        $this->fireEvent('form.model-setted',[$this, $this->model]);
+        //$this->fireEvent('form.model-setted',[$this, $this->model]);
+        $this->callAfterListeners('setModel', [$this->model]);
+
         return $this;
     }
 
@@ -766,8 +783,21 @@ class Form extends FormItem implements ArrayAccess
     public static function setRenderer(RendererInterface $renderer){
 
         static::$renderer = $renderer;
-        static::fireStatic('form.renderer-changed', $renderer);
 
+        if (static::$rendererChangedListener) {
+            call_user_func(static::$rendererChangedListener, $renderer);
+        }
+
+    }
+
+    /**
+     * Get informed when the renderer did change.
+     *
+     * @var callable $listener
+     **/
+    public static function onRendererChanged(callable $listener)
+    {
+        static::$rendererChangedListener = $listener;
     }
 
     public static function provideRenderer(callable $callable)

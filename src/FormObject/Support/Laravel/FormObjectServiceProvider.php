@@ -1,8 +1,5 @@
 <?php namespace FormObject\Support\Laravel;
 
-
-use Signal\Support\Laravel\IlluminateBus;
-
 use Illuminate\Support\ServiceProvider;
 use Collection\NestedArray;
 
@@ -22,6 +19,11 @@ class FormObjectServiceProvider extends ServiceProvider
 {
 
     /**
+     * @var array
+     **/
+    protected $listenedForms = [];
+
+    /**
         * Register the service provider.
         *
         * @return void
@@ -29,12 +31,19 @@ class FormObjectServiceProvider extends ServiceProvider
     public function register()
     {
 
-        Form::setStaticEventBus(new IlluminateBus($this->app['events']));
+        $this->app->afterResolving(Form::class, function (Form $form) {
+            $this->forwardLegacyEvents($form);
+        });
 
-        Form::provideValidationBroker(function(Form $form){
+        Form::provideValidationBroker(function(Form $form) {
 
             $broker = new AutoValidatorBroker(new ValidatorFactory());
             $broker->setForm($form);
+
+            $broker->onAfter('setValidator', function ($validator) use ($form) {
+                $formName = $form->getName();
+                $this->app['events']->fire("form.validator-setted.$formName", [$validator]);
+            });
             return $broker;
 
         });
@@ -56,7 +65,8 @@ class FormObjectServiceProvider extends ServiceProvider
             $chain->append($this->getTranslationNamer());
         });
 
-        $this->app['events']->listen('form.renderer-changed', function($renderer) {
+        Form::onRendererChanged(function ($renderer) {
+            $this->app['events']->fire('form.renderer-changed', [$renderer]);
             $this->addFormPaths($renderer);
         });
 
@@ -202,6 +212,35 @@ class FormObjectServiceProvider extends ServiceProvider
             }
 
         });
+    }
+
+    protected function forwardLegacyEvents(Form $form)
+    {
+
+        $hash = spl_object_hash($form);
+
+        // Double hook check
+        if (isset($this->listenedForms[$hash])) {
+            return;
+        }
+
+        $events = $this->app->make('events');
+        $formName = $form->getName();
+
+        $form->onAfter('setFields', function ($fields) use ($events, $formName) {
+            $events->fire("form.fields-setted.$formName", [$fields]);
+        });
+
+        $form->onAfter('setActions', function ($actions) use ($events, $formName) {
+            $events->fire("form.actions-setted.$formName", [$actions]);
+        });
+
+        $form->onAfter('setModel', function ($model) use ($events, $formName, $form) {
+            // The old event in Form was with the form itself as the first parameter
+            $events->fire("form.model-setted.$formName", [$form, $model]);
+        });
+
+        $this->listenedForms[$hash] = true;
     }
 
 }

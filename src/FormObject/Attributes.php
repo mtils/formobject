@@ -26,6 +26,7 @@ class Attributes extends StringDictionary{
      **/
     public function __toString(){
 
+
         if (!count($this)) {
             return '';
         }
