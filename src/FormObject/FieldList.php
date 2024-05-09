@@ -13,7 +13,10 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
 
     protected $keyOrder = array();
 
-    protected $dataFields = array();
+    /**
+     * @var Field[]
+     */
+    protected $dataFields = [];
 
     protected $switchable = FALSE;
 
@@ -140,7 +143,7 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
 
     /**
     * @brief Adds a Field or Fields to the FieldList
-    * 
+    *
     * @return FieldList
     */
     public function push(Field $field){

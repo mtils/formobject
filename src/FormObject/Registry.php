@@ -2,9 +2,11 @@
 
 namespace FormObject;
 
+use FormObject\Validator\FactoryInterface;
+
 final class Registry{
 
-    private static $store = array();
+    private static array $store = [];
 
     private function __construct(){
     }
@@ -22,16 +24,17 @@ final class Registry{
 
     /**
     * @brief Returns the factory for validators
-    * @return Validator\FactoryInstance
+    * @return FactoryInterface
     */
-    public static function getValidatorFactory(){
+    public static function getValidatorFactory()
+    {
         if(!isset(self::$store['validatorFactory'])){
             self::$store['validatorFactory'] = new Validator\SimpleFactory;
         }
         return self::$store['validatorFactory'];
     }
 
-    public static function setValidatorFactory(Validator\FactoryInterface $factory){
+    public static function setValidatorFactory(FactoryInterface $factory){
         self::$store['validatorFactory'] = $factory;
     }
 

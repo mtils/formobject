@@ -5,6 +5,9 @@ use \Countable;
 use \IteratorAggregate;
 use \ArrayAccess;
 
+/**
+ * @deprecated use Collection\OrderedList
+ */
 class OrderedList implements Countable, IteratorAggregate, ArrayAccess{
 
     protected $_array = array();
@@ -163,7 +166,7 @@ class OrderedList implements Countable, IteratorAggregate, ArrayAccess{
 
     /**
      * Copies the list or its extended class
-     * 
+     *
      * @return StringList
      */
     public function copy(){

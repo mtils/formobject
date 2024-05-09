@@ -6,16 +6,23 @@ use DomainException;
 use Illuminate\Validation\Validator as LaravelValidator;
 use Illuminate\Support\MessageBag;
 use Illuminate\Support\ViewErrorBag;
-use \Validator as LaravelFactory;
 use Session;
+
+use function call_user_func;
 
 class Validator implements ValidatorInterface{
 
+    /**
+     * @var LaravelValidator
+     */
     protected $srcValidator;
 
+    /**
+     * @var Form
+     */
     protected $form;
 
-    protected $validated=FALSE;
+    protected $validated=false;
 
     protected $messageBag;
 
@@ -23,11 +30,22 @@ class Validator implements ValidatorInterface{
 
     protected $throwExceptions = TRUE;
 
+    /**
+     * @var callable|null
+     */
+    protected static $factoryCallback;
+
+    /**
+     * @var callable|null
+     */
+    protected static $viewErrorCallback;
+
     public function __construct(Form $form){
         $this->form = $form;
     }
 
-    public function validate(array $data){
+    public function validate(array $data)
+    {
 
         $srcValidator = $this->getSrcValidator();
 
@@ -42,10 +60,14 @@ class Validator implements ValidatorInterface{
         return $res;
     }
 
-    public function getSrcValidator(){
+    /**
+     * @return LaravelValidator
+     */
+    public function getSrcValidator()
+    {
 
         if(!$this->srcValidator){
-            $srcValidator = LaravelFactory::make([], $this->getRules());
+            $srcValidator = call_user_func(static::$factoryCallback, [], $this->getRules());
             $this->setSrcValidator($srcValidator);
         }
         return $this->srcValidator;
@@ -96,10 +118,8 @@ class Validator implements ValidatorInterface{
 
     protected function getMessageBag(){
 
-        if($errors = Session::get('errors')){
-            if($errors instanceof ViewErrorBag && $errors->hasBag('default')){
-                return $errors->getBag('default');
-            }
+        if ($errors = call_user_func(static::$viewErrorCallback)) {
+            return $errors;
         }
 
         if($this->form->wasSubmitted()){
@@ -111,7 +131,7 @@ class Validator implements ValidatorInterface{
             }
         }
 
-        return new MessageBag;
+        return new MessageBag();
 
     }
 
@@ -267,4 +287,25 @@ class Validator implements ValidatorInterface{
         return '';
     }
 
-} 
+    public static function getFactoryCallback() : ?callable
+    {
+        return static::$factoryCallback;
+    }
+
+    public static function setFactoryCallback(callable $factoryCallback) : void
+    {
+        static::$factoryCallback = $factoryCallback;
+    }
+
+    public static function getViewErrorCallback(): ?callable
+    {
+        return self::$viewErrorCallback;
+    }
+
+    public static function setViewErrorCallback(?callable $viewErrorCallback): void
+    {
+        self::$viewErrorCallback = $viewErrorCallback;
+    }
+
+
+}

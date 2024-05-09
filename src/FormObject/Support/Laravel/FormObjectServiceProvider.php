@@ -1,5 +1,6 @@
 <?php namespace FormObject\Support\Laravel;
 
+use FormObject\Support\Laravel\Validator\Validator;
 use Illuminate\Support\ServiceProvider;
 use Collection\NestedArray;
 
@@ -14,6 +15,7 @@ use FormObject\Support\Laravel\Http\InputRequestProvider;
 use FormObject\Support\Laravel\Http\CurrentActionUrlProvider;
 use FormObject\Support\Laravel\Http\ResourceActionUrlProvider;
 use FormObject\Factory;
+use Illuminate\Support\ViewErrorBag;
 
 class FormObjectServiceProvider extends ServiceProvider
 {
@@ -84,6 +86,19 @@ class FormObjectServiceProvider extends ServiceProvider
             $this->registerInputCasters($caster);
         });
 
+        Validator::setFactoryCallback(function ($data, $rules) {
+            return $this->app->make('validator')->make($data, $rules);
+        });
+
+        Validator::setViewErrorCallback(function () {
+            /** @var Illuminate\Session\SessionManager $sessionManager */
+            $sessionManager = $this->app->make('session');
+            $errors = $sessionManager->get('errors');
+            if($errors instanceof ViewErrorBag && $errors->hasBag('default')){
+                return $errors->getBag('default');
+            }
+            return null;
+        });
 
     }
 

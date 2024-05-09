@@ -1,5 +1,6 @@
 <?php namespace FormObject;
 
+use FormObject\Validator\ValidationException;
 use InvalidArgumentException;
 use ArrayAccess;
 use ReflectionClass;
@@ -20,6 +21,7 @@ use FormObject\Renderer\PhpRenderer;
 use FormObject\Factory;
 use Ems\Contracts\Core\HasMethodHooks;
 use Ems\Core\Patterns\HookableTrait;
+use ReturnTypeWillChange;
 
 class Form extends FormItem implements ArrayAccess
 {
@@ -273,19 +275,24 @@ class Form extends FormItem implements ArrayAccess
         return $this;
     }
 
+    #[ReturnTypeWillChange]
     public function offsetExists($offset){
         return $this->getFields()->offsetExists($offset);
     }
 
+    #[ReturnTypeWillChange]
     public function offsetGet($offset){
         $this->getData();
         return $this->getFields()->offsetGet($offset);
     }
 
+    #[ReturnTypeWillChange]
     public function offsetSet($offset, $value){
         return $this->getFields()->offsetSet($offset, $value);
     }
 
+
+    #[ReturnTypeWillChange]
     public function offsetUnset($offset){
         $this->getFields()->offsetUnset($offset);
     }
@@ -316,7 +323,7 @@ class Form extends FormItem implements ArrayAccess
     public function __call($method, $params)
     {
 
-        if (strpos($method, 'with') === 0) {
+        if (str_starts_with($method, 'with')) {
             $fieldClass = substr($method, 4);
             $field = static::__callStatic($fieldClass, $params);
             $this->push($field);
@@ -387,12 +394,13 @@ class Form extends FormItem implements ArrayAccess
      *        Will fill the form by all data in $data but only
      *        concern fields with the prefix "$prefix__"
      *
-     * @param \ArrayInterface $data
+     * @param array|ArrayAccess $data
      * @param mixed $prefix NULL:regard all fields FALSE|'': Regard unprefixed,
      *                      non-empty string: only with prefix $prefix
-     * @return void
+     * @return Form
      **/
-    public function fillByArray($data, $prefix=NULL){
+    public function fillByArray($data, $prefix=NULL)
+    {
 
         if($this->_ignoreFillIfSubmitted && $this->wasSubmitted()){
             return $this;

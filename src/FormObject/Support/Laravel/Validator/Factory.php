@@ -5,7 +5,8 @@ use FormObject\Validator\FactoryInterface;
 
 use Illuminate\Validation\Validator as LaravelValidator;
 
-class Factory implements FactoryInterface{
+class Factory implements FactoryInterface
+{
 
     public function createValidator(Form $form){
 

@@ -8,7 +8,7 @@ class Field extends FormItem{
     /**
     * @brief The assosiated Form Object
     * @var Form
-    * 
+    *
     */
     protected $form;
 
@@ -177,7 +177,7 @@ class Field extends FormItem{
 
     /**
      * @brief Creates a new Field
-     * 
+     *
      * @see __construct
      * @param string $name The name of that field
      * @param string $title The title (label) of that field
@@ -201,11 +201,13 @@ class Field extends FormItem{
         // No exceptions inside __toString
         catch(\Exception $e){
             return get_class($e) .': '. $e->getMessage() . " Line:" . $e->getLine() . " File:" . $e->getFile();
-            trigger_error($e->getMessage(),E_USER_WARNING);
         }
-        return "";
     }
 
+    /**
+     * @param $prefix
+     * @return static
+     */
     public function copy($prefix='')
     {
 

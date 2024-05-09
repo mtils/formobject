@@ -4,10 +4,10 @@ use Collection\StringDictionary;
 
 class Attributes extends StringDictionary{
 
-    public $rowDelimiter = " ";
-    public $keyValueDelimiter = '=';
-    public $prefix = '';
-    public $suffix = '';
+    public string $rowDelimiter = " ";
+    public string $keyValueDelimiter = '=';
+    public string $prefix = '';
+    public string $suffix = '';
 
     /**
      * Encodes the attribute values
@@ -24,7 +24,8 @@ class Attributes extends StringDictionary{
      *
      * @return string
      **/
-    public function __toString(){
+    public function __toString(): string
+    {
 
 
         if (!count($this)) {

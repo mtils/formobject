@@ -8,7 +8,9 @@ use \ReflectionMethod;
 use \ReflectionException;
 use \Exception;
 
-class FormItem{
+use function var_dump;
+
+class FormItem {
 
     protected $id;
 
@@ -94,17 +96,27 @@ class FormItem{
         return $this;
     }
 
-    protected function initCssClasses(){
-        if(!$this->cssClasses){
-            $this->cssClasses = new StringList;
-            $classNames = static::getRelevantCssClassNames(get_class($this));
-            foreach($classNames as $className){
-                $this->cssClasses->append(self::phpClassNameToCssClassName($className));
-            }
-            $search = array('[',']');
-            $replace = array('-','-');
-            $this->cssClasses->append(str_replace($search, $replace,$this->getName()));
+    protected function initCssClasses() {
+        if ($this->cssClasses) {
+            return $this->cssClasses;
         }
+
+        $this->cssClasses = new StringList();
+        $classNames = static::getRelevantCssClassNames(get_class($this));
+        foreach($classNames as $className) {
+            $cssClass = self::phpClassNameToCssClassName($className);
+            if (trim($cssClass) !== "") {
+                $this->cssClasses->append($cssClass);
+            }
+        }
+        $name = $this->getName();
+        if (!$name) {
+            return $this->cssClasses;
+        }
+        $search = ['[',']'];
+        $replace = ['-','-'];
+        $this->cssClasses->append(str_replace($search, $replace, $name));
+        return $this->cssClasses;
     }
 
     public function getCssClasses(){
@@ -158,11 +170,16 @@ class FormItem{
         return $this;
     }
 
-    public static function getRelevantCssClassNames($className){
+    public static function getRelevantCssClassNames($className)
+    {
 
-        $classNames = array();
-        $class = new ReflectionClass($className);
-        if(in_array($class->getShortName(), array('Field','Form'))){
+        $classNames = [];
+        try {
+            $class = new ReflectionClass($className);
+        } catch (ReflectionException $e) {
+            return $classNames;
+        }
+        if(in_array($class->getShortName(), ['Field','Form','FormItem'])){
             return $classNames;
         }
 
@@ -177,7 +194,8 @@ class FormItem{
         return $classNames;
     }
 
-    public static function phpClassNameToCssClassName($className){
+    public static function phpClassNameToCssClassName($className)
+    {
         return strtolower(preg_replace('/(?<=[a-z])([A-Z])/', '-$1', $className));
     }
 
