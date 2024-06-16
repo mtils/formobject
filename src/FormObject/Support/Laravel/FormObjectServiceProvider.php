@@ -1,6 +1,7 @@
 <?php namespace FormObject\Support\Laravel;
 
 use FormObject\Support\Laravel\Validator\Validator;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
 use Collection\NestedArray;
 
@@ -44,7 +45,7 @@ class FormObjectServiceProvider extends ServiceProvider
 
             $broker->onAfter('setValidator', function ($validator) use ($form) {
                 $formName = $form->getName();
-                $this->app['events']->fire("form.validator-setted.$formName", [$validator]);
+                $this->app['events']->dispatch("form.validator-setted.$formName", [$validator]);
             });
             return $broker;
 
@@ -68,7 +69,7 @@ class FormObjectServiceProvider extends ServiceProvider
         });
 
         Form::onRendererChanged(function ($renderer) {
-            $this->app['events']->fire('form.renderer-changed', [$renderer]);
+            $this->app['events']->dispatch('form.renderer-changed', [$renderer]);
             $this->addFormPaths($renderer);
         });
 
@@ -239,20 +240,21 @@ class FormObjectServiceProvider extends ServiceProvider
             return;
         }
 
+        /** @var Dispatcher $events */
         $events = $this->app->make('events');
         $formName = $form->getName();
 
         $form->onAfter('setFields', function ($fields) use ($events, $formName) {
-            $events->fire("form.fields-setted.$formName", [$fields]);
+            $events->dispatch("form.fields-setted.$formName", [$fields]);
         });
 
         $form->onAfter('setActions', function ($actions) use ($events, $formName) {
-            $events->fire("form.actions-setted.$formName", [$actions]);
+            $events->dispatch("form.actions-setted.$formName", [$actions]);
         });
 
         $form->onAfter('setModel', function ($model) use ($events, $formName, $form) {
             // The old event in Form was with the form itself as the first parameter
-            $events->fire("form.model-setted.$formName", [$form, $model]);
+            $events->dispatch("form.model-setted.$formName", [$form, $model]);
         });
 
         $this->listenedForms[$hash] = true;
