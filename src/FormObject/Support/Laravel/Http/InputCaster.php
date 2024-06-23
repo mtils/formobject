@@ -23,7 +23,7 @@ class InputCaster implements InputCasterContract
         foreach ($input as $key=>$value) {
 
             // tokens, _method...
-            if (starts_with($key,'_')) {
+            if (str_starts_with($key,'_')) {
                 continue;
             }
 
@@ -32,7 +32,7 @@ class InputCaster implements InputCasterContract
                 continue;
             }
 
-            if ($this->removeConfirmations && ends_with($key, '_confirmation')) {
+            if ($this->removeConfirmations && str_ends_with($key, '_confirmation')) {
                 continue;
             }
 

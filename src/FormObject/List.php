@@ -1,9 +1,12 @@
 <?php
 
 namespace FormObject;
+use ArrayIterator;
 use \Countable;
 use \IteratorAggregate;
 use \ArrayAccess;
+use ReflectionClass;
+use ReturnTypeWillChange;
 
 /**
  * @deprecated use Collection\OrderedList
@@ -136,27 +139,27 @@ class OrderedList implements Countable, IteratorAggregate, ArrayAccess{
     }
 
     public function reverse(){
-        $this->_array = array_reverse($this->_array);
+        $this->_array = reverse($this->_array);
         return $this;
     }
 
-    public function getIterator(){
+    #[ReturnTypeWillChange] public function getIterator(){
         return new ArrayIterator($this->_array);
     }
 
-    public function offsetExists($offset){
+    #[ReturnTypeWillChange] public function offsetExists($offset){
         return isset($this->_array[$offset]);
     }
 
-    public function offsetGet($offset){
+    #[ReturnTypeWillChange] public function offsetGet($offset){
         return $this->_array[$offset];
     }
 
-    public function offsetSet($offset, $value){
+    #[ReturnTypeWillChange] public function offsetSet($offset, $value){
         $this->_array[$offset] = $value;
     }
 
-    public function offsetUnset($offset){
+    #[ReturnTypeWillChange] public function offsetUnset($offset){
         $this->pop($offset);
     }
 
@@ -176,7 +179,7 @@ class OrderedList implements Countable, IteratorAggregate, ArrayAccess{
 
     /**
      * @see MDF_Array_List::copy()
-     * @return MDF_Array_List
+     * @return self
      */
     public function __clone(){
         return $this->copy();

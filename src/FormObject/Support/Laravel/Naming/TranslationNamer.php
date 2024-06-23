@@ -111,7 +111,7 @@ class TranslationNamer implements NamerInterface
 
         $name = $ownerName;
 
-        if (ends_with($ownerName,'-form')) {
+        if (str_ends_with($ownerName,'-form')) {
             $name = substr($ownerName, 0, strlen($ownerName)-5);
         }
 
@@ -187,7 +187,7 @@ class TranslationNamer implements NamerInterface
 
     protected function isConfirmation(Field $field)
     {
-        return ends_with($field->getName(), '_confirmation');
+        return str_ends_with($field->getName(), '_confirmation');
     }
 
     protected function getFallbackActionKey(Action $action, $property)

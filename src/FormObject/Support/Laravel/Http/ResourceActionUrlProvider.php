@@ -83,8 +83,8 @@ class ResourceActionUrlProvider implements ActionUrlProviderInterface
 
     protected function isResourceRoute(){
 
-        if($routeName = $this->router->currentRouteName()){
-            if(ends_with($routeName,['.create', '.edit'])){
+        if($routeName = $this->router->currentRouteName()) {
+            if(str_ends_with($routeName,'.create') || str_ends_with($routeName,'.edit')){
                 return TRUE;
             }
         }

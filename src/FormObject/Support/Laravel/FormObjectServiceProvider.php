@@ -158,7 +158,7 @@ class FormObjectServiceProvider extends ServiceProvider
             $cleaned = [];
             foreach ($input as $key=>$value) {
                 // tokens, _method...
-                if (!starts_with($key,'_')) {
+                if (!str_starts_with($key,'_')) {
                     $cleaned[$key] = $value;
                 }
             }
@@ -186,7 +186,7 @@ class FormObjectServiceProvider extends ServiceProvider
             $cleaned = [];
             foreach ($input as $key=>$value) {
                 // form actions
-                if (!ends_with($key, '_confirmation')) {
+                if (!str_ends_with($key, '_confirmation')) {
                     $cleaned[$key] = $value;
                 }
             }
