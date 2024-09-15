@@ -7,13 +7,14 @@ class SelectableExtractor extends ProxyExtractor{
 
     protected $_field = NULL;
 
-    protected function createProxy($item, $key, $value, $position){
-        
+    protected function createProxy($item, $key, $value, $position): ValueProxy
+    {
+
         return new SelectableProxy($item);
-        return $proxy;
     }
 
-    protected function setProxyValues(ValueProxy &$proxy, $key, $value, $position){
+    protected function setProxyValues(ValueProxy &$proxy, $key, $value, $position): void
+    {
         parent::setProxyValues($proxy, $key, $value, $position);
         $proxy->_setField($this->_field);
     }

@@ -29,7 +29,8 @@ class SelectableProxy extends ValueProxy{
         $this->_selected = $selected;
     }
 
-    public function __get($name){
+    public function __get($name) : mixed
+    {
         if($name == 'selected'){
             return $this->isSelected();
         }
