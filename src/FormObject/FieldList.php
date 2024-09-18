@@ -6,6 +6,7 @@ use \Countable;
 use \ArrayAccess;
 use \IteratorAggregate;
 use \OutOfBoundsException;
+use ReturnTypeWillChange;
 
 class FieldList extends Field implements Countable, ArrayAccess, IteratorAggregate{
 
@@ -88,6 +89,7 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
         return $this->keyOrder;
     }
 
+    #[ReturnTypeWillChange]
     public function offsetExists($offset){
         if(isset($this->fields[$offset])){
             return TRUE;
@@ -98,6 +100,7 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
         return FALSE;
     }
 
+    #[ReturnTypeWillChange]
     public function offsetGet($offset){
         if(isset($this->fields[$offset])){
             if($this->fields[$offset] instanceof Field &&
@@ -108,6 +111,7 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
         return $this->findDataField($offset)->getValue();
     }
 
+    #[ReturnTypeWillChange]
     public function offsetSet($offset, $value){
 
         if (!isset($this->fields[$offset])) {
@@ -130,6 +134,7 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
         return FALSE;
     }
 
+    #[ReturnTypeWillChange]
     public function offsetUnset($offset){
         $idx = array_search($offset, $this->keyOrder);
         unset($this->keyOrder[$idx]);
@@ -137,6 +142,7 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
         unset($this->fields[$offset]);
     }
 
+    #[ReturnTypeWillChange]
     public function getIterator(){
         return new FieldList\Iterator($this);
     }
@@ -172,7 +178,9 @@ class FieldList extends Field implements Countable, ArrayAccess, IteratorAggrega
         return $this->get($fieldName);
     }
 
-    public function count(){
+    #[ReturnTypeWillChange]
+    public function count()
+    {
         return count($this->fields);
     }
 

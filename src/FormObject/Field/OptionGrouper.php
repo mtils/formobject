@@ -3,6 +3,7 @@
 use InvalidArgumentException;
 use IteratorAggregate;
 use ArrayIterator;
+use ReturnTypeWillChange;
 
 class OptionGrouper implements IteratorAggregate{
 
@@ -87,6 +88,7 @@ class OptionGrouper implements IteratorAggregate{
         return $groupedArray;
     }
 
+    #[ReturnTypeWillChange]
     public function getIterator(){
         return new ArrayIterator($this->buildGroupArray());
     }

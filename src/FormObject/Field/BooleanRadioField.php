@@ -2,6 +2,7 @@
 
 use Collection\Iterator\CastableIterator;
 use Collection\Map\Extractor;
+use ReturnTypeWillChange;
 
 class BooleanRadioField extends BooleanField implements Selectable{
 
@@ -73,6 +74,7 @@ class BooleanRadioField extends BooleanField implements Selectable{
         return $this;
     }
 
+    #[ReturnTypeWillChange]
     public function getIterator(){
         return SelectableHelper::createIterator($this->getSrc(),
                                                 $this,

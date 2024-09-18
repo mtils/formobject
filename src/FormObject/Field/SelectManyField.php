@@ -6,6 +6,7 @@ use Collection\ColumnList;
 use FormObject\Field;
 use FormObject\Attributes;
 use OutOfBoundsException;
+use ReturnTypeWillChange;
 
 class SelectManyField extends Field implements Selectable{
 
@@ -61,7 +62,7 @@ class SelectManyField extends Field implements Selectable{
             unset($attributes['value']);
         }
         catch(OutOfBoundsException $e){
-            
+
         }
     }
 
@@ -104,6 +105,7 @@ class SelectManyField extends Field implements Selectable{
         return $this;
     }
 
+    #[ReturnTypeWillChange]
     public function getIterator(){
         return SelectableHelper::createIterator($this->getSrc(),
                                                 $this,

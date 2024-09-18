@@ -4,6 +4,7 @@ use Collection\Iterator\CastableIterator;
 use Collection\Map\Extractor;
 use FormObject\Field;
 use FormObject\Attributes;
+use ReturnTypeWillChange;
 
 class SelectOneField extends Field implements Selectable{
 
@@ -59,7 +60,7 @@ class SelectOneField extends Field implements Selectable{
             unset($attributes['value']);
         }
         catch(OutOfBoundsException $e){
-            
+
         }
     }
 
@@ -104,6 +105,7 @@ class SelectOneField extends Field implements Selectable{
         return $this;
     }
 
+    #[ReturnTypeWillChange]
     public function getIterator(){
         return SelectableHelper::createIterator($this->getSrc(),
                                                 $this,

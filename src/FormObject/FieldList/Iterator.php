@@ -2,6 +2,7 @@
 
 namespace FormObject\FieldList;
 use FormObject\FieldList;
+use ReturnTypeWillChange;
 
 class Iterator implements \Iterator{
 
@@ -14,7 +15,7 @@ class Iterator implements \Iterator{
         $this->fieldCount = count($fieldList);
     }
 
-    public function current(){
+    #[ReturnTypeWillChange] public function current(){
 
         $keys = $this->fieldList->getKeyOrder();
         $key = $keys[$this->position];
@@ -22,19 +23,19 @@ class Iterator implements \Iterator{
         return $this->fieldList->get($key);
     }
 
-    public function key(){
+    #[ReturnTypeWillChange] public function key(){
         return $this->position;
     }
 
-    public function next(){
+    #[ReturnTypeWillChange] public function next(){
         ++$this->position;
     }
 
-    public function rewind(){
+    #[ReturnTypeWillChange] public function rewind(){
         $this->position = 0;
     }
 
-    public function valid(){
+    #[ReturnTypeWillChange] public function valid(){
         return ($this->position < $this->fieldCount);
     }
 }

@@ -2,6 +2,7 @@
 
 use FormObject\FieldList;
 use Collection\Map\Extractor;
+use ReturnTypeWillChange;
 
 class SelectOneGroup extends FieldList implements Selectable{
 
@@ -51,6 +52,7 @@ class SelectOneGroup extends FieldList implements Selectable{
         return $this;
     }
 
+    #[ReturnTypeWillChange]
     public function getIterator(){
         return SelectableHelper::createIterator($this->getSrc(),
                                                 $this,
