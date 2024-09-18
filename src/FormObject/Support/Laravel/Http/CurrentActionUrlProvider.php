@@ -6,6 +6,8 @@ use FormObject\Http\ActionUrlProviderInterface;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Http\Request;
 
+use function method_exists;
+
 class CurrentActionUrlProvider implements ActionUrlProviderInterface{
 
     /**
@@ -57,7 +59,8 @@ class CurrentActionUrlProvider implements ActionUrlProviderInterface{
      *
      **/
     public function currentUrl(){
-        return $this->urlGenerator->to($this->request->getPathInfo());
+        $path = method_exists($this->request, 'originalPath') ? $this->request->originalPath() : $this->request->path();
+        return $this->urlGenerator->to($path);
     }
 
 }
